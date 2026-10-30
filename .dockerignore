@@ -1,0 +1,46 @@
+# Repository and editor state
+.git
+.vs
+.idea
+.vscode
+
+# Local build and test output
+**/bin
+**/obj
+**/TestResults
+artifacts
+coverage
+.nuget
+packages
+**/*.nupkg
+**/*.snupkg
+**/*.coverage
+**/*.coveragexml
+**/*.trx
+**/*.user
+**/*.suo
+**/*.DotSettings.user
+
+# Local configuration and credentials
+**/.env
+**/.env.*
+!**/.env.example
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/secrets.json
+**/*.pfx
+**/*.p12
+**/*.pem
+**/*.key
+
+# Runtime data and temporary files
+.data
+data
+logs
+downloads
+media
+**/*.log
+**/*.tmp
+**/*.bak
+**/.DS_Store
+**/Thumbs.db

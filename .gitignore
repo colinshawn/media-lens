@@ -1,0 +1,53 @@
+# .NET build output and packages
+**/[Bb]in/
+**/[Oo]bj/
+artifacts/
+.nuget/
+packages/
+*.nupkg
+*.snupkg
+
+# Tests and coverage
+**/TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+# IDE and user-specific files
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/secrets.json
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Local runtime data and temporary downloads
+/.data/
+/data/
+/logs/
+/downloads/
+/media/
+*.log
+*.tmp
+*.bak
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+desktop.ini
