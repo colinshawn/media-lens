@@ -43,39 +43,71 @@ Share text
 
 The resolver returns addresses and metadata. Callers own media downloads, local file storage, photo-library permissions, and any native live-photo packaging or import.
 
+## Planned API paths
+
+These routes are a design contract, not an implemented API. The first platform adapter is Douyin (`douyin`); additional adapters require their own cookie-free feasibility verification.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/resolve` | Detect the platform from share text and resolve its media. |
+| POST | `/api/v1/platforms/{platform}/resolve` | Resolve with an explicit platform constraint; Douyin uses `/api/v1/platforms/douyin/resolve`. |
+| GET | `/api/v1/platforms` | List registered platforms, enablement, and verified media capabilities. |
+
+Both POST routes accept the same `{ "text": "public share text" }` body and return the same media model. An explicit platform is a constraint, not permission to reinterpret a foreign-platform link or switch adapters. Platform discovery reads the in-memory adapter registry without contacting platforms or requiring a database.
+
+The unified route remains stable as platforms are added. Platform identifiers are stable lowercase strings; media types do not become separate `/videos`, `/images`, or `/live-photos` routes. Compatibility is versioned at `/api/v1`; adding a platform alone does not require `/api/v2`.
+
+Discovery distinguishes `unverified`, `supported`, and `unsupported` capabilities. Initially only Douyin is registered; unverified capabilities must not be advertised as supported. This status describes validated implementation coverage, not real-time upstream availability.
+
 ## Proposed result model
 
-This example describes the intended data shape, not an implemented API contract. URLs are illustrative.
+The two POST routes return the same platform-independent contract. This is a draft, not an implemented API; the example URL and headers are illustrative.
 
 ```json
 {
+  "requestId": "example-request-video",
   "platform": "douyin",
   "workId": "123456",
-  "workType": "album",
+  "workType": "video",
+  "webUrl": "https://www.douyin.com/video/123456",
+  "description": "公开视频示例",
   "items": [
     {
-      "type": "image",
-      "imageUrls": ["https://cdn.example/image-01.jpg"]
-    },
-    {
-      "type": "livePhoto",
-      "imageUrls": ["https://cdn.example/image-02.jpg"],
-      "videoUrls": ["https://cdn.example/image-02.mp4"]
+      "index": 1,
+      "type": "video",
+      "imageSources": [],
+      "videoSources": [
+        {
+          "url": "https://cdn.example/01_video.mp4",
+          "headers": {
+            "User-Agent": "<download user agent>",
+            "Referer": "https://www.douyin.com/"
+          },
+          "mimeType": "video/mp4",
+          "fileName": "douyin_123456_01_video.mp4",
+          "width": 1080,
+          "height": 1920,
+          "durationMs": 12000,
+          "sizeBytes": null,
+          "expiresAt": null
+        }
+      ]
     }
   ],
-  "requestHeaders": {
-    "User-Agent": "<download user agent>",
-    "Referer": "https://www.douyin.com/"
-  },
+  "resolvedAt": "2026-10-30T08:00:00Z",
   "expiresAt": null
 }
 ```
 
-- `workType` distinguishes `video` and `album`; each item is a `video`, `image`, or `livePhoto`. An album can contain both still images and live photos.
-- A video item uses `videoUrls`. A live-photo item keeps its still image and motion clip together.
-- Preserve complete URLs, including their query parameters. These addresses may be temporary; callers should resolve the share again when an address expires.
-- Download headers must not contain cookies or upstream account credentials. Use resource-specific headers if a platform requires different values for different resources.
-- Use `null` when expiration is unknown; do not invent an expiry time. Final CDN delivery must also be verified from the caller's network.
+- Every response includes a server-generated `requestId`; a work is identified by `(platform, workId)`, with IDs serialized as strings.
+- `workType` is `video` or `album`. Items have contiguous one-based `index` values and a `type` of `video`, `image`, or `livePhoto`.
+- `imageSources` and `videoSources` contain ordered fallback candidates for the same logical image or clip. Download one candidate from each required list, not every candidate. An unused list is `[]`.
+- A live-photo item keeps both its image candidates and motion-clip candidates together. Albums preserve the original item order, including mixed still/live albums.
+- Each source carries its complete `url`, its own `headers`, and nullable `mimeType`, `fileName`, `width`, `height`, `durationMs`, `sizeBytes`, and `expiresAt`. There are no inherited download headers. Source variants may have different formats or dimensions.
+- Preserve complete URLs and all query parameters. Download headers never include cookies or upstream account credentials.
+- Unknown metadata is explicitly `null`; image duration is `null`. The top-level `expiresAt` is the earliest source expiry only when every returned source has a known expiry; otherwise it is `null`.
+- Error responses use `{ "requestId": "...", "error": { "code": "...", "message": "...", "retryable": false, "retryAfterSeconds": null } }`. Platform discovery returns `requestId` and `platforms`.
+- The complete [response field design](openspec/changes/add-cookie-free-douyin-resolution/design.md) includes mixed-album examples, field types, nullability, and error semantics. Callers own local saving and native live-photo packaging/import.
 
 ## Technology
 
@@ -83,7 +115,7 @@ This example describes the intended data shape, not an implemented API contract.
 | --- | --- |
 | Language | C# |
 | Development platform | .NET 10, targeting `net10.0` |
-| Planned API host | ASP.NET Core 10 |
+| Planned API host | ASP.NET Core 10 Minimal API |
 | Recommended deployment | Docker with Linux containers |
 | License | MIT |
 

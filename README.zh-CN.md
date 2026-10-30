@@ -43,39 +43,71 @@ MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目�
 
 解析服务负责返回资源地址与元数据。媒体下载、本地文件保存、相册权限，以及系统原生实况照片的封装或导入，由调用方负责。
 
+## 接口路径规划
+
+以下为设计契约，尚未实现。首期仅注册抖音适配器（`douyin`），后续平台分别完成严格无 Cookie 验证后接入。
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| POST | `/api/v1/resolve` | 根据分享文本自动识别平台并解析媒体。 |
+| POST | `/api/v1/platforms/{platform}/resolve` | 指定平台解析；抖音为 `/api/v1/platforms/douyin/resolve`。 |
+| GET | `/api/v1/platforms` | 查询已注册平台、启用状态和经验证的媒体能力。 |
+
+两个 POST 接口共用 `{ "text": "公开分享文本" }` 请求体及媒体结果模型。显式平台仅增加平台约束，链接归属不匹配时明确失败，不切换到其他适配器。平台发现接口读取内存中的适配器注册表，不请求上游平台、不依赖数据库。
+
+增加平台时保持统一入口不变。平台标识使用稳定的小写字符串；视频、图片、实况通过结果类型表达，不分别建立 `/videos`、`/images`、`/live-photos` 路由。兼容版本统一位于 `/api/v1`，单纯增加平台不升级为 `/api/v2`。
+
+能力状态区分 `unverified`（未验证）、`supported`（已支持）、`unsupported`（未支持）。首期仅抖音出现在注册列表中；未经验证的类型不标记为已支持。能力状态反映实现的验证覆盖，不作为上游实时可用性探测。
+
 ## 结果模型草案
 
-以下示例说明预期的数据形态，不是已经实现的 API 契约。示例中的链接不指向真实媒体。
+两个 POST 接口共用平台无关的响应契约。当前仍为设计草案，尚未实现；示例地址和请求头不代表实际可下载资源。
 
 ```json
 {
+  "requestId": "example-request-video",
   "platform": "douyin",
   "workId": "123456",
-  "workType": "album",
+  "workType": "video",
+  "webUrl": "https://www.douyin.com/video/123456",
+  "description": "公开视频示例",
   "items": [
     {
-      "type": "image",
-      "imageUrls": ["https://cdn.example/image-01.jpg"]
-    },
-    {
-      "type": "livePhoto",
-      "imageUrls": ["https://cdn.example/image-02.jpg"],
-      "videoUrls": ["https://cdn.example/image-02.mp4"]
+      "index": 1,
+      "type": "video",
+      "imageSources": [],
+      "videoSources": [
+        {
+          "url": "https://cdn.example/01_video.mp4",
+          "headers": {
+            "User-Agent": "<download user agent>",
+            "Referer": "https://www.douyin.com/"
+          },
+          "mimeType": "video/mp4",
+          "fileName": "douyin_123456_01_video.mp4",
+          "width": 1080,
+          "height": 1920,
+          "durationMs": 12000,
+          "sizeBytes": null,
+          "expiresAt": null
+        }
+      ]
     }
   ],
-  "requestHeaders": {
-    "User-Agent": "<download user agent>",
-    "Referer": "https://www.douyin.com/"
-  },
+  "resolvedAt": "2026-10-30T08:00:00Z",
   "expiresAt": null
 }
 ```
 
-- `workType` 区分 `video` 和 `album`；每个资源项分别标记为 `video`、`image` 或 `livePhoto`。同一图集可以混合普通图片和实况照片。
-- 视频资源使用 `videoUrls`；实况资源将静态图与动态短片放在同一个资源项内。
-- 保留完整 URL，包括其中的查询参数。媒体地址可能有时效性，失效后调用方应重新解析分享内容。
-- 下载请求头中不得包含 Cookie 或上游账号凭据。如果不同资源需要不同请求头，应按资源分别返回。
-- 无法确定过期时间时使用 `null`，不推测有效期。还需要在调用方的实际网络环境中验证最终 CDN 下载链路。
+- 每个响应包含服务端生成的 `requestId`；作品通过 `(platform, workId)` 标识，ID 使用字符串。
+- `workType` 为 `video` 或 `album`。媒体项使用从 1 开始的连续 `index`，`type` 为 `video`、`image` 或 `livePhoto`。
+- `imageSources`、`videoSources` 为同一张图片或同一段视频的有序备用候选，不是额外作品项。调用方从每个必需列表中择一下载，不需要下载全部候选；不适用的列表为 `[]`。
+- 实况的静态图和动态短片候选保存在同一媒体项中；混合图集保持原始项顺序。
+- 每个候选携带完整 `url`、独立 `headers` 及可空的 `mimeType`、`fileName`、`width`、`height`、`durationMs`、`sizeBytes`、`expiresAt`。下载头没有跨层继承，不同候选的格式、尺寸和大小可以不同。
+- 保留 URL 及全部查询参数；下载请求头不得包含 Cookie 或上游账号凭据。
+- 未知技术元数据显式返回 `null`，图片时长为 `null`。顶层 `expiresAt` 仅在所有返回候选的过期时间均已知时取最早值，否则为 `null`。
+- 错误形状为 `{ "requestId": "...", "error": { "code": "...", "message": "...", "retryable": false, "retryAfterSeconds": null } }`；平台发现返回 `requestId` 与 `platforms`。
+- 完整的[响应字段设计](openspec/changes/add-cookie-free-douyin-resolution/design.md)包含混合图集示例、类型、可空性及错误语义。调用方负责本地保存和原生实况封装/导入。
 
 ## 技术选型
 
@@ -83,7 +115,7 @@ MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目�
 | --- | --- |
 | 开发语言 | C# |
 | 开发平台 | .NET 10，目标框架为 `net10.0` |
-| API 宿主规划 | ASP.NET Core 10 |
+| API 宿主规划 | ASP.NET Core 10 Minimal API |
 | 推荐部署方式 | Docker，使用 Linux 容器 |
 | 开源许可证 | MIT |
 
