@@ -4,7 +4,7 @@ MediaLens 当前只有 README、OpenSpec 配置、共享 .NET 10 构建配置和
 
 已有依据：参考项目展示了分享文本提取、短链识别、作品详情字段映射及图片/短片配对方法。第一个参考项目通过身份池和浏览器游客 Cookie 获取详情，第二个参考项目会补充 `msToken` Cookie；它们不能作为严格无 Cookie 成功的证据。
 
-验证结论（2026-10-31）：第一方匿名详情入口 `api.amemv.com` 在仅含作品 ID 和固定应用版本参数时返回四类样本的完整数据；未发送 Cookie、签名、游客或设备标识。四类样本经真实 Minimal API、逐项顺序/配对比对、独立客户端下载和系统解码通过，详见[验证记录](../../../docs/validation/cookie-free-douyin.md)。
+验证结论（2026-10-31）：第一方匿名详情入口 `api.amemv.com` 在仅含作品 ID 和固定应用版本参数时返回四类样本的完整数据；未发送 Cookie、签名、游客或设备标识。四类样本经真实 Minimal API、逐项顺序/配对比对、独立客户端下载和系统解码通过，详见[验证记录](../../../../docs/validation/cookie-free-douyin.md)。
 
 ## Goals / Non-Goals
 
@@ -89,7 +89,7 @@ JSON 契约使用静态类型与源生成序列化上下文，为 native AOT 保
 
 公网目标分类使用 2026-10-31 获取的 IANA IPv4 / IPv6 特殊用途注册表快照（26 个 IPv4 前缀、25 个 IPv6 前缀），按最长前缀处理父子网例外。只有目的地址有效、可转发且明确 Globally Reachable 的活动条目允许；N/A、空值、False 和废弃条目拒绝。IPv4 多播另外排除，未命中特殊用途表的 IPv6 仅接受全球单播 2000::/3。带区域编号的 IPv6 拒绝。
 
-IPv4-mapped 地址按内嵌 IPv4 分类；标准 NAT64 前缀 64:ff9b::/96 还必须通过内嵌 IPv4 检查，遵循 RFC 6052 §3.1。自定义网络转换前缀和实际路由可达性不由静态地址表推断。共享 HTTP 策略的域名、端口、整组 DNS 拒绝及连接 IP 固定行为保持一致。规则维护、原始字段快照和边界测试见[公网地址分类记录](../../../docs/validation/public-ip-classification.md)。
+IPv4-mapped 地址按内嵌 IPv4 分类；标准 NAT64 前缀 64:ff9b::/96 还必须通过内嵌 IPv4 检查，遵循 RFC 6052 §3.1。自定义网络转换前缀和实际路由可达性不由静态地址表推断。共享 HTTP 策略的域名、端口、整组 DNS 拒绝及连接 IP 固定行为保持一致。规则维护、原始字段快照和边界测试见[公网地址分类记录](../../../../docs/validation/public-ip-classification.md)。
 
 ### 4. 链接识别先于平台元数据请求
 

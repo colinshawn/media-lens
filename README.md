@@ -107,7 +107,9 @@ The two POST routes share the same implemented contract. The success example bel
 - Preserve complete URLs and all query parameters. Download headers never include cookies or upstream account credentials.
 - Unknown metadata is explicitly `null`; image duration is `null`. The top-level `expiresAt` is the earliest source expiry only when every returned source has a known expiry; otherwise it is `null`.
 - Error responses use `{ "requestId": "...", "error": { "code": "...", "message": "...", "retryable": false, "retryAfterSeconds": null } }`. Platform discovery returns `requestId` and `platforms`.
-- The complete [response field design](openspec/changes/add-cookie-free-douyin-resolution/design.md) includes mixed-album examples, field types, nullability, and error semantics. Callers own local saving and native live-photo packaging/import.
+- The complete [response field design](openspec/changes/archive/2026-10-31-add-cookie-free-douyin-resolution/design.md) includes mixed-album examples, field types, nullability, and error semantics. Callers own local saving and native live-photo packaging/import.
+
+Download using both the candidate's `url` and `headers`. Opening only the URL in a browser may return 403 when a required Referer or other header is missing. If a candidate fails, try the next source in order.
 
 CDN addresses may expire. Re-resolve the original share if a download fails because an address has expired, preserve every query parameter, and use each candidate's own headers. Unknown expiry stays `null`; it is not a guarantee of permanent access.
 

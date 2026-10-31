@@ -107,7 +107,9 @@ MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目�
 - 保留 URL 及全部查询参数；下载请求头不得包含 Cookie 或上游账号凭据。
 - 未知技术元数据显式返回 `null`，图片时长为 `null`。顶层 `expiresAt` 仅在所有返回候选的过期时间均已知时取最早值，否则为 `null`。
 - 错误形状为 `{ "requestId": "...", "error": { "code": "...", "message": "...", "retryable": false, "retryAfterSeconds": null } }`；平台发现返回 `requestId` 与 `platforms`。
-- 完整的[响应字段设计](openspec/changes/add-cookie-free-douyin-resolution/design.md)包含混合图集示例、类型、可空性及错误语义。调用方负责本地保存和原生实况封装/导入。
+- 完整的[响应字段设计](openspec/changes/archive/2026-10-31-add-cookie-free-douyin-resolution/design.md)包含混合图集示例、类型、可空性及错误语义。调用方负责本地保存和原生实况封装/导入。
+
+下载时必须同时使用候选的 `url` 与 `headers`。只在浏览器地址栏打开 URL 可能因缺少正确的 Referer 等请求头而返回 403；候选失败后应按序尝试其他来源。
 
 CDN 地址可能失效。下载因地址过期失败时，应重新解析原分享文本，保留 URL 的全部查询参数，并使用该候选自己的请求头。未知过期时间为 `null`，不代表永久有效。
 
