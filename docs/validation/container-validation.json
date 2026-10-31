@@ -1,0 +1,103 @@
+{
+  "observedAt": "2026-10-31T07:31:17.912314+00:00",
+  "imageBuild": "passed",
+  "platform": "Linux container",
+  "realSamples": [
+    {
+      "sampleKind": "video",
+      "route": "/api/v1/resolve",
+      "status": 200,
+      "elapsedMilliseconds": 4156,
+      "workType": "video",
+      "itemTypes": [
+        "video"
+      ],
+      "imageSources": 0,
+      "videoSources": 2
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "route": "/api/v1/resolve",
+      "status": 200,
+      "elapsedMilliseconds": 10433,
+      "workType": "album",
+      "itemTypes": [
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
+      "imageSources": 24,
+      "videoSources": 0
+    },
+    {
+      "sampleKind": "livePhoto",
+      "route": "/api/v1/resolve",
+      "status": 200,
+      "elapsedMilliseconds": 3783,
+      "workType": "album",
+      "itemTypes": [
+        "livePhoto"
+      ],
+      "imageSources": 2,
+      "videoSources": 2
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "route": "/api/v1/platforms/douyin/resolve",
+      "status": 200,
+      "elapsedMilliseconds": 4083,
+      "workType": "album",
+      "itemTypes": [
+        "image",
+        "image",
+        "image",
+        "livePhoto"
+      ],
+      "imageSources": 8,
+      "videoSources": 2
+    }
+  ],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/platforms",
+      "status": 200,
+      "enabled": true,
+      "capabilities": {
+        "video": "supported",
+        "imageAlbum": "supported",
+        "livePhoto": "supported",
+        "mixedAlbum": "supported"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/resolve",
+      "status": 422,
+      "code": "UNSUPPORTED_RESOURCE"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/platforms/douyin/resolve",
+      "status": 422,
+      "code": "UNSUPPORTED_RESOURCE"
+    }
+  ],
+  "publicDnsOverrides": true,
+  "cookieInputRejected": true,
+  "allRealSamplesPassed": true,
+  "user": "1654",
+  "readOnlyRootFilesystem": true,
+  "filesystemChanges": 0,
+  "imageId": "sha256:b3aae20dfa1032fe1b1d7d903fd16cfb722c7fc0a9a6e84140c7553ada0f553c",
+  "containerVerification": "passed"
+}

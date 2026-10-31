@@ -44,3 +44,8 @@ media
 **/*.bak
 **/.DS_Store
 **/Thumbs.db
+
+# Private validation files
+.local
+**/*.private.json
+**/*.probe-report.json

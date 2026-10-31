@@ -47,6 +47,11 @@ coverage/
 *.tmp
 *.bak
 
+# Private validation inputs and local probe reports
+/.local/
+*.private.json
+*.probe-report.json
+
 # Operating-system metadata
 .DS_Store
 Thumbs.db

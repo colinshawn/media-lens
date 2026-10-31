@@ -1,0 +1,934 @@
+{
+  "formatVersion": 1,
+  "supportStatus": "unverified",
+  "additionalChecks": [
+    {
+      "observedAt": "2026-10-30T15:03:57.090634+00:00",
+      "cookiePolicy": "none",
+      "results": [
+        {
+          "sampleKind": "video",
+          "entry": "richUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "video",
+          "entry": "nativeSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "video",
+          "entry": "desktopUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 183,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "video",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 183,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "richUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "nativeSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "desktopUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "richUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "nativeSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "desktopUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "richUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "nativeSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "desktopUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 302,
+          "bytes": 181,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-30T15:07:56.217105+00:00",
+      "cookiePolicy": "none",
+      "results": [
+        {
+          "sampleKind": "video",
+          "entry": "iesDetailUnsigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "video",
+          "entry": "iesDetailSigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "video",
+          "entry": "desktopUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "video",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "iesDetailUnsigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "iesDetailSigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "desktopUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "iesDetailUnsigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "iesDetailSigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "desktopUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "iesDetailUnsigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "iesDetailSigned",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 403,
+          "bytes": 46,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0,
+          "refusalCategory": "uifidMissing"
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "desktopUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "publicPreviewUserAgent",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 72914,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-30T15:30:13.678592+00:00",
+      "cookiePolicy": "none",
+      "results": [
+        {
+          "sampleKind": "video",
+          "entry": "staticHeaderUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "video",
+          "entry": "staticHeaderSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "staticHeaderUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "staticHeaderSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "staticHeaderUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "staticHeaderSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "staticHeaderUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "staticHeaderSigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-30T15:34:37.923223+00:00",
+      "cookiePolicy": "none",
+      "results": [
+        {
+          "sampleKind": "video",
+          "entry": "edgeMobileVideo",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 32548,
+          "setCookieObserved": false,
+          "routerData": true,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "video",
+          "entry": "edgeMobileSlides",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 25965,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "edgeMobileVideo",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 32618,
+          "setCookieObserved": true,
+          "routerData": true,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "edgeMobileSlides",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 25975,
+          "setCookieObserved": true,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "edgeMobileVideo",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 32618,
+          "setCookieObserved": true,
+          "routerData": true,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "edgeMobileSlides",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 25965,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "edgeMobileVideo",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 32548,
+          "setCookieObserved": false,
+          "routerData": true,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "edgeMobileSlides",
+          "host": "www.iesdouyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 25965,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-30T15:36:11.938233+00:00",
+      "cookiePolicy": "none",
+      "results": [
+        {
+          "sampleKind": "video",
+          "entry": "declaredCookieCapabilityUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "video",
+          "entry": "declaredCookieCapabilitySigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "declaredCookieCapabilityUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "imageAlbum",
+          "entry": "declaredCookieCapabilitySigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "declaredCookieCapabilityUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "livePhoto",
+          "entry": "declaredCookieCapabilitySigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "declaredCookieCapabilityUnsigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        },
+        {
+          "sampleKind": "mixedAlbum",
+          "entry": "declaredCookieCapabilitySigned",
+          "host": "www.douyin.com",
+          "cookieSent": false,
+          "status": 200,
+          "bytes": 0,
+          "setCookieObserved": false,
+          "routerData": false,
+          "workMatched": false,
+          "playAddressNodes": 0,
+          "imageItems": 0
+        }
+      ]
+    }
+  ],
+  "adapterCheck": {
+    "observedAt": "2026-10-30T15:51:03.4844790Z",
+    "cookiePolicy": "none",
+    "results": [
+      {
+        "sampleKind": "video",
+        "entryPoint": "adapter",
+        "outcome": "COOKIE_FREE_UNAVAILABLE",
+        "httpStatusCode": 200,
+        "contentType": "text/html",
+        "metadataBytes": 32564,
+        "metadata": {
+          "payloadKind": "adapter",
+          "workMatched": false,
+          "completeMediaMetadata": false,
+          "imageCount": 0,
+          "livePhotoCount": 0,
+          "imageSourceCount": 0,
+          "videoSourceCount": 0
+        },
+        "hops": [
+          {
+            "host": "v.douyin.com",
+            "statusCode": 302,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": true
+          }
+        ]
+      },
+      {
+        "sampleKind": "imageAlbum",
+        "entryPoint": "adapter",
+        "outcome": "COOKIE_FREE_UNAVAILABLE",
+        "httpStatusCode": 200,
+        "contentType": "text/html",
+        "metadataBytes": 32564,
+        "metadata": {
+          "payloadKind": "adapter",
+          "workMatched": false,
+          "completeMediaMetadata": false,
+          "imageCount": 0,
+          "livePhotoCount": 0,
+          "imageSourceCount": 0,
+          "videoSourceCount": 0
+        },
+        "hops": [
+          {
+            "host": "v.douyin.com",
+            "statusCode": 302,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": true
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": true
+          }
+        ]
+      },
+      {
+        "sampleKind": "livePhoto",
+        "entryPoint": "adapter",
+        "outcome": "COOKIE_FREE_UNAVAILABLE",
+        "httpStatusCode": 200,
+        "contentType": "text/html",
+        "metadataBytes": 32494,
+        "metadata": {
+          "payloadKind": "adapter",
+          "workMatched": false,
+          "completeMediaMetadata": false,
+          "imageCount": 0,
+          "livePhotoCount": 0,
+          "imageSourceCount": 0,
+          "videoSourceCount": 0
+        },
+        "hops": [
+          {
+            "host": "v.douyin.com",
+            "statusCode": 302,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": true
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          }
+        ]
+      },
+      {
+        "sampleKind": "mixedAlbum",
+        "entryPoint": "adapter",
+        "outcome": "COOKIE_FREE_UNAVAILABLE",
+        "httpStatusCode": 200,
+        "contentType": "text/html",
+        "metadataBytes": 32494,
+        "metadata": {
+          "payloadKind": "adapter",
+          "workMatched": false,
+          "completeMediaMetadata": false,
+          "imageCount": 0,
+          "livePhotoCount": 0,
+          "imageSourceCount": 0,
+          "videoSourceCount": 0
+        },
+        "hops": [
+          {
+            "host": "v.douyin.com",
+            "statusCode": 302,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": true
+          },
+          {
+            "host": "www.iesdouyin.com",
+            "statusCode": 200,
+            "cookieHeaderObserved": false,
+            "setCookieObserved": false
+          }
+        ]
+      }
+    ]
+  }
+}

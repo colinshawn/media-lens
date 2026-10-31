@@ -1,0 +1,384 @@
+{
+  "observedAt": "2026-10-31T09:30:30.597407+00:00",
+  "networkConfiguration": {
+    "systemDns": true,
+    "dnsOverrides": false,
+    "hostsOverrides": false,
+    "codeChanged": false,
+    "systemSettingsChanged": false
+  },
+  "systemDnsResults": [
+    {
+      "host": "v.douyin.com",
+      "addresses": [
+        "198.18.1.191"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "www.iesdouyin.com",
+      "addresses": [
+        "198.18.1.195"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "api.amemv.com",
+      "addresses": [
+        "140.249.106.79",
+        "140.249.106.80",
+        "140.249.106.81",
+        "140.249.106.82",
+        "140.249.106.83",
+        "140.249.111.36",
+        "140.249.111.38",
+        "140.249.111.39",
+        "140.249.111.40",
+        "140.249.111.41",
+        "182.40.51.81",
+        "182.40.51.82",
+        "182.40.51.83",
+        "182.40.51.84",
+        "182.40.51.85"
+      ],
+      "fakeIpObserved": false,
+      "allPythonGlobal": true
+    },
+    {
+      "host": "v26-web.douyinvod.com",
+      "addresses": [
+        "198.18.3.15"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "v11-weba.douyinvod.com",
+      "addresses": [
+        "198.18.1.174"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "p3-pc-sign.douyinpic.com",
+      "addresses": [
+        "198.18.3.20"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "p9-pc-sign.douyinpic.com",
+      "addresses": [
+        "198.18.1.184"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    },
+    {
+      "host": "jingxuan.douyin.com",
+      "addresses": [
+        "198.18.0.7"
+      ],
+      "fakeIpObserved": true,
+      "allPythonGlobal": false
+    }
+  ],
+  "dotnetDnsAndMetadata": {
+    "dns": [
+      {
+        "Host": "v.douyin.com",
+        "Addresses": [
+          "198.18.1.191"
+        ],
+        "PolicyAccepted": false,
+        "ErrorType": null
+      },
+      {
+        "Host": "api.amemv.com",
+        "Addresses": [
+          "140.249.106.81",
+          "140.249.111.39",
+          "182.40.51.84",
+          "140.249.106.79",
+          "140.249.111.40",
+          "140.249.106.83",
+          "182.40.51.83",
+          "182.40.51.82",
+          "182.40.51.81",
+          "140.249.111.38",
+          "140.249.106.82",
+          "140.249.111.37",
+          "140.249.111.41",
+          "140.249.106.84",
+          "182.40.51.86"
+        ],
+        "PolicyAccepted": true,
+        "ErrorType": null
+      },
+      {
+        "Host": "v26-web.douyinvod.com",
+        "Addresses": [
+          "198.18.3.15"
+        ],
+        "PolicyAccepted": false,
+        "ErrorType": null
+      },
+      {
+        "Host": "p3-pc-sign.douyinpic.com",
+        "Addresses": [
+          "198.18.3.20"
+        ],
+        "PolicyAccepted": false,
+        "ErrorType": null
+      }
+    ],
+    "metadataRequest": {
+      "Status": 200,
+      "MetadataBytes": 90331,
+      "ErrorType": null,
+      "InnerType": null,
+      "PolicyFailure": null
+    }
+  },
+  "shareAdapterResults": [
+    {
+      "sampleKind": "video",
+      "entryPoint": "adapter",
+      "outcome": "targetRejected",
+      "httpStatusCode": null,
+      "contentType": null,
+      "metadataBytes": 0,
+      "metadata": {
+        "payloadKind": "adapter",
+        "workMatched": false,
+        "completeMediaMetadata": false,
+        "imageCount": 0,
+        "livePhotoCount": 0,
+        "imageSourceCount": 0,
+        "videoSourceCount": 0
+      },
+      "hops": []
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "entryPoint": "adapter",
+      "outcome": "targetRejected",
+      "httpStatusCode": null,
+      "contentType": null,
+      "metadataBytes": 0,
+      "metadata": {
+        "payloadKind": "adapter",
+        "workMatched": false,
+        "completeMediaMetadata": false,
+        "imageCount": 0,
+        "livePhotoCount": 0,
+        "imageSourceCount": 0,
+        "videoSourceCount": 0
+      },
+      "hops": []
+    },
+    {
+      "sampleKind": "livePhoto",
+      "entryPoint": "adapter",
+      "outcome": "targetRejected",
+      "httpStatusCode": null,
+      "contentType": null,
+      "metadataBytes": 0,
+      "metadata": {
+        "payloadKind": "adapter",
+        "workMatched": false,
+        "completeMediaMetadata": false,
+        "imageCount": 0,
+        "livePhotoCount": 0,
+        "imageSourceCount": 0,
+        "videoSourceCount": 0
+      },
+      "hops": []
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "entryPoint": "adapter",
+      "outcome": "targetRejected",
+      "httpStatusCode": null,
+      "contentType": null,
+      "metadataBytes": 0,
+      "metadata": {
+        "payloadKind": "adapter",
+        "workMatched": false,
+        "completeMediaMetadata": false,
+        "imageCount": 0,
+        "livePhotoCount": 0,
+        "imageSourceCount": 0,
+        "videoSourceCount": 0
+      },
+      "hops": []
+    }
+  ],
+  "canonicalAdapterDiagnostic": [
+    {
+      "sampleKind": "video",
+      "entryPoint": "adapter",
+      "outcome": "UPSTREAM_UNAVAILABLE",
+      "httpStatusCode": 200,
+      "contentType": "application/json",
+      "metadataBytes": 90359,
+      "metadata": {
+        "payloadKind": "adapter",
+        "workMatched": false,
+        "completeMediaMetadata": false,
+        "imageCount": 0,
+        "livePhotoCount": 0,
+        "imageSourceCount": 0,
+        "videoSourceCount": 0
+      },
+      "hops": [
+        {
+          "host": "api.amemv.com",
+          "statusCode": 200,
+          "cookieHeaderObserved": false,
+          "setCookieObserved": false
+        }
+      ]
+    }
+  ],
+  "nativeApiResults": [
+    {
+      "sampleKind": "video",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 40,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "video",
+      "inputKind": "canonicalWorkLink",
+      "status": 503,
+      "elapsedMilliseconds": 472,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 3,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "inputKind": "canonicalWorkLink",
+      "status": 503,
+      "elapsedMilliseconds": 219,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "livePhoto",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 2,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "livePhoto",
+      "inputKind": "canonicalWorkLink",
+      "status": 503,
+      "elapsedMilliseconds": 250,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 2,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "inputKind": "canonicalWorkLink",
+      "status": 503,
+      "elapsedMilliseconds": 294,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    }
+  ],
+  "defaultContainerResults": {
+    "observedAt": "2026-10-31T09:28:52.807917+00:00",
+    "imageBuild": "passed",
+    "platform": "Linux container",
+    "realSamples": [
+      {
+        "sampleKind": "video",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 30,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "imageAlbum",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 5,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "livePhoto",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 8,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "mixedAlbum",
+        "route": "/api/v1/platforms/douyin/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 5,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/v1/platforms",
+        "status": 200,
+        "enabled": true,
+        "capabilities": {
+          "video": "supported",
+          "imageAlbum": "supported",
+          "livePhoto": "supported",
+          "mixedAlbum": "supported"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/platforms/douyin/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      }
+    ],
+    "publicDnsOverrides": false,
+    "cookieInputRejected": true,
+    "allRealSamplesPassed": false,
+    "user": "1654",
+    "readOnlyRootFilesystem": true,
+    "filesystemChanges": 0,
+    "imageId": "sha256:b3aae20dfa1032fe1b1d7d903fd16cfb722c7fc0a9a6e84140c7553ada0f553c",
+    "containerVerification": "mediaResolutionFailed"
+  },
+  "callerDownloadAttempted": false,
+  "reason": "Resolution was blocked before usable CDN sources could be returned.",
+  "domainSuffixesStillRequiringRealIp": [
+    "douyin.com",
+    "iesdouyin.com",
+    "douyinvod.com",
+    "douyinpic.com"
+  ],
+  "privacy": "No share text, work ID, full redirect URL, media URL, or raw metadata body is included."
+}

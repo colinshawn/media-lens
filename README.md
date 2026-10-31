@@ -6,7 +6,7 @@ English | [简体中文](README.zh-CN.md)
 
 MediaLens is a .NET 10 project for resolving public social-share text into structured media resources: videos, images, and live photos. Callers download the returned resources and save them to local storage or a photo library.
 
-> **Status: project bootstrap.** This repository contains project documentation and shared development configuration. Platform support and a runnable API are planned; strictly cookie-free resolution has not yet been validated against live platforms.
+> **Status: Douyin video, image-album, live-photo, and mixed-album resolution verified.** Real public shares passed the Minimal API and independent CDN-download checks on 2026-10-31. All 20 required resources in the final four-sample batch decoded successfully. Douyin is enabled with four `supported` capabilities. See the scoped [validation record](docs/validation/cookie-free-douyin.md).
 
 ## Goals
 
@@ -16,11 +16,11 @@ MediaLens is a .NET 10 project for resolving public social-share text into struc
 - Preserve the order of album items and the image/video pairing of each live photo.
 - Provide a small HTTP API with platform-specific parsing kept behind adapters.
 
-The first validation target is public Douyin shares. Additional platforms will be evaluated individually; this is not a statement of current support.
+The first supported platform is Douyin. Additional platforms require their own adapter and anonymous validation.
 
 ## Cookie-free boundary
 
-Cookie-free resolution is a project requirement, not an established platform capability:
+The implementation keeps the following cookie-free boundary:
 
 - Do not accept, generate, store, or send cookies. Do not forward incoming `Cookie` headers or reuse upstream `Set-Cookie` values, including across redirects.
 - Do not create account or guest identities, maintain identity pools, or use browser sessions as a fallback.
@@ -43,9 +43,9 @@ Share text
 
 The resolver returns addresses and metadata. Callers own media downloads, local file storage, photo-library permissions, and any native live-photo packaging or import.
 
-## Planned API paths
+## HTTP API
 
-These routes are a design contract, not an implemented API. The first platform adapter is Douyin (`douyin`); additional adapters require their own cookie-free feasibility verification.
+These routes use ASP.NET Core 10 Minimal API. Only Douyin (`douyin`) is registered and enabled. Additional adapters require their own cookie-free verification.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -59,9 +59,9 @@ The unified route remains stable as platforms are added. Platform identifiers ar
 
 Discovery distinguishes `unverified`, `supported`, and `unsupported` capabilities. Initially only Douyin is registered; unverified capabilities must not be advertised as supported. This status describes validated implementation coverage, not real-time upstream availability.
 
-## Proposed result model
+## Response contract
 
-The two POST routes return the same platform-independent contract. This is a draft, not an implemented API; the example URL and headers are illustrative.
+The two POST routes share the same implemented contract. The success example below uses synthetic data and contains no usable download URL.
 
 ```json
 {
@@ -109,13 +109,17 @@ The two POST routes return the same platform-independent contract. This is a dra
 - Error responses use `{ "requestId": "...", "error": { "code": "...", "message": "...", "retryable": false, "retryAfterSeconds": null } }`. Platform discovery returns `requestId` and `platforms`.
 - The complete [response field design](openspec/changes/add-cookie-free-douyin-resolution/design.md) includes mixed-album examples, field types, nullability, and error semantics. Callers own local saving and native live-photo packaging/import.
 
+CDN addresses may expire. Re-resolve the original share if a download fails because an address has expired, preserve every query parameter, and use each candidate's own headers. Unknown expiry stays `null`; it is not a guarantee of permanent access.
+
+Errors have stable `code` values: `INVALID_INPUT` and `PLATFORM_MISMATCH` use 400; `PLATFORM_NOT_FOUND` and confirmed `CONTENT_UNAVAILABLE` use 404; disabled platforms, anonymous unavailability, incomplete media, and unsupported resources use 422. `UPSTREAM_CHANGED` uses 502, temporary `UPSTREAM_UNAVAILABLE` uses 503, and `RESOLUTION_TIMEOUT` uses 504. Framework errors use the same response shape. Temporary failures may be retried; identity or input failures do not trigger a session fallback.
+
 ## Technology
 
 | Area | Choice |
 | --- | --- |
 | Language | C# |
 | Development platform | .NET 10, targeting `net10.0` |
-| Planned API host | ASP.NET Core 10 Minimal API |
+| API host | ASP.NET Core 10 Minimal API |
 | Recommended deployment | Docker with Linux containers |
 | License | MIT |
 
@@ -129,11 +133,41 @@ dotnet --version
 
 [`global.json`](global.json) selects SDK `10.0.100` or a later installed 10.0 feature band using `latestFeature`, with preview SDKs disabled. [`Directory.Build.props`](Directory.Build.props) defines the shared target framework, nullable reference types, implicit usings, and project metadata. See the [.NET SDK selection documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json).
 
-There is no application project to build or run at this stage. Add the runtime project and its verification tests after validating the initial anonymous resolution path.
+Build and test the verification tool from the repository root:
+
+```sh
+dotnet restore MediaLens.slnx
+dotnet build MediaLens.slnx --no-restore
+dotnet test MediaLens.slnx --no-build
+dotnet format MediaLens.slnx --no-restore --verify-no-changes
+```
+
+`src/MediaLens.Api` hosts the API; `src/MediaLens.Core` contains contracts, registry, adapters, and the cookie-free HTTP transport shared with the probe. The two test projects use synthetic inputs, local TCP upstreams, and real Kestrel hosts to verify cookie isolation, media pairing, routing, serialization, errors, cancellation, expiry handling, and report privacy.
+
+Run the API locally:
+
+```sh
+dotnet run --project src/MediaLens.Api -- --urls http://127.0.0.1:8080
+curl http://127.0.0.1:8080/api/v1/platforms
+curl -X POST http://127.0.0.1:8080/api/v1/resolve \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"https://www.douyin.com/video/123456"}'
+```
+
+Discovery reports `douyin`, `enabled: true`, and four `supported` capabilities. Both POST routes return media results for accessible works; replace the synthetic ID above with public share text. Incoming Cookie headers and extra identity fields are rejected. The service has no database, media persistence, browser, or session setup.
+
+```sh
+dotnet run --project tools/MediaLens.Probe -- \
+  --input /absolute/path/outside-repo/samples.private.json --entry share
+```
+
+The input is an array of `{ "kind": "video", "text": "share text" }`; allowed categories are `video`, `imageAlbum`, `livePhoto`, and `mixedAlbum`. Entry modes are `share`, `mobile`, `desktop`, `detail`, `legacy`, and `adapter`. The last mode invokes the shared production adapter directly. Reports omit share text, URLs, work IDs, raw responses, and cookie values. Keep real samples and local output outside the repository; fixtures contain synthetic data only.
+
+Exit code `0` means complete metadata was observed for every input, **not** that caller downloads passed; `1` means at least one observation did not pass, and `2` means invalid input. The [validation record](docs/validation/cookie-free-douyin.md) documents results, DNS mapping constraints, and the scope of the success evidence.
 
 ## Docker deployment (recommended)
 
-The planned deployment uses a multi-stage Docker build:
+The Dockerfile uses a multi-stage Linux build:
 
 | Stage | Microsoft base image |
 | --- | --- |
@@ -142,14 +176,24 @@ The planned deployment uses a multi-stage Docker build:
 
 Use environment-based application configuration and container-standard logging. The resolver's core flow should not require persistent media storage. [`.dockerignore`](.dockerignore) excludes local build output, IDE state, and local configuration from the build context.
 
-A Dockerfile, Compose configuration, and runnable deployment commands will be added with the API implementation. Refer to Microsoft's [ASP.NET Core container documentation](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/docker/building-net-docker-images?view=aspnetcore-10.0) for the base-image and multi-stage build approach.
+```sh
+docker build -t media-lens:local .
+docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
+  -p 127.0.0.1:8080:8080 media-lens:local
+```
+
+If your development machine uses TUN Fake-IP DNS, configure real public DNS for platform/CDN hosts. The service rejects synthetic or reserved addresses. Diagnostic DNS mappings used for validation stay outside the repository; see the [network conditions](docs/validation/cookie-free-douyin.md).
+
+The container runs as the base image's non-root user. No browser, database, Redis, media volume, or account configuration is required. Set `MediaLens__ResolutionTimeoutSeconds` to an integer from 1 through 120 to change the total resolution deadline (default 30 seconds). Binding uses the standard ASP.NET Core environment settings, such as `ASPNETCORE_HTTP_PORTS` (8080 in the image).
+
+Image build and container checks passed, including discovery, both POST routes, Cookie rejection, and a read-only root filesystem without persistent writes. Real media checks and deployment checks are recorded separately. See the [container validation](docs/validation/container-validation.json).
 
 ## Initial milestones
 
-- [ ] Verify cookie-free public Douyin video, image album, live-photo album, and mixed-album resolution.
-- [ ] Implement the minimal API, normalized result model, and explicit failure responses.
-- [ ] Verify final CDN downloads from the caller's network while preserving live-photo pairs.
-- [ ] Add repeatable tests, Docker packaging, and deployment instructions.
+- [x] Verify cookie-free public Douyin video, image album, live-photo album, and mixed-album resolution.
+- [x] Implement the minimal API, normalized result model, and explicit failure responses.
+- [x] Verify final CDN downloads from the caller's network while preserving live-photo pairs.
+- [x] Add repeatable tests, Docker packaging, and deployment instructions.
 
 ## License
 

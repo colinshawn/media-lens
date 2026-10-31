@@ -1,1 +1,13 @@
-<Solution />
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MediaLens.Core/MediaLens.Core.csproj" />
+    <Project Path="src/MediaLens.Api/MediaLens.Api.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/MediaLens.Probe/MediaLens.Probe.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MediaLens.Probe.Tests/MediaLens.Probe.Tests.csproj" />
+    <Project Path="tests/MediaLens.Tests/MediaLens.Tests.csproj" />
+  </Folder>
+</Solution>

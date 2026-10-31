@@ -1,0 +1,1120 @@
+{
+  "observedAt": "2026-10-31T09:58:48.031711+00:00",
+  "networkConditions": {
+    "addressOverrides": false,
+    "hostsOverrides": false,
+    "applicationCodeChanged": false,
+    "systemConfigurationChanged": false,
+    "currentUserCacheFlushExitCode": 0,
+    "administratorCacheFlushCompleted": false,
+    "administratorCacheFlushBlocker": "sudo requires an administrator password"
+  },
+  "systemAddressLookup": {
+    "observedAt": "2026-10-31T09:43:34.831541+00:00",
+    "resolver": "system",
+    "dnsOverrides": false,
+    "results": [
+      {
+        "host": "v.douyin.com",
+        "addressCount": 12,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "www.iesdouyin.com",
+        "addressCount": 12,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "api.amemv.com",
+        "addressCount": 15,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "v26-web.douyinvod.com",
+        "addressCount": 10,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "v11-weba.douyinvod.com",
+        "addressCount": 15,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "p3-pc-sign.douyinpic.com",
+        "addressCount": 8,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "p9-pc-sign.douyinpic.com",
+        "addressCount": 8,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      },
+      {
+        "host": "jingxuan.douyin.com",
+        "addressCount": 16,
+        "fakeIpObserved": false,
+        "allPythonGlobal": true
+      }
+    ]
+  },
+  "dotnetLookup": {
+    "dns": [
+      {
+        "Host": "v.douyin.com",
+        "Addresses": [
+          "198.18.0.4"
+        ],
+        "PolicyAccepted": false,
+        "ErrorType": null
+      },
+      {
+        "Host": "api.amemv.com",
+        "Addresses": [
+          "182.40.140.149",
+          "182.40.140.150",
+          "182.40.140.146",
+          "182.40.140.147",
+          "182.40.140.148"
+        ],
+        "PolicyAccepted": true,
+        "ErrorType": null
+      },
+      {
+        "Host": "v26-web.douyinvod.com",
+        "Addresses": [
+          "103.254.79.162",
+          "182.40.214.26",
+          "182.40.214.25",
+          "182.40.214.28",
+          "103.254.79.172",
+          "103.254.79.177",
+          "182.40.214.27",
+          "103.254.79.170",
+          "103.254.79.157",
+          "103.254.79.176"
+        ],
+        "PolicyAccepted": true,
+        "ErrorType": null
+      },
+      {
+        "Host": "p3-pc-sign.douyinpic.com",
+        "Addresses": [
+          "140.249.111.6",
+          "140.249.111.10",
+          "140.249.111.9",
+          "140.249.111.11",
+          "140.249.111.4",
+          "140.249.111.7",
+          "140.249.111.5",
+          "140.249.111.8"
+        ],
+        "PolicyAccepted": true,
+        "ErrorType": null
+      }
+    ],
+    "metadataRequest": {
+      "Status": 200,
+      "MetadataBytes": 90360,
+      "ErrorType": null,
+      "InnerType": null,
+      "PolicyFailure": null
+    }
+  },
+  "resolverComparison": {
+    "observedAt": "2026-10-31T09:47:33.408544+00:00",
+    "results": [
+      {
+        "host": "v.douyin.com",
+        "systemCacheAddresses": [
+          "140.249.111.38",
+          "182.40.51.83",
+          "182.40.130.74",
+          "182.40.130.75",
+          "140.249.108.15",
+          "140.249.106.80",
+          "182.40.130.76",
+          "182.40.51.84",
+          "140.249.111.36",
+          "140.249.108.16",
+          "140.249.111.37",
+          "182.40.51.82"
+        ],
+        "udpDnsAnswers": [
+          "140.249.111.38",
+          "182.40.51.83",
+          "182.40.130.74",
+          "182.40.130.75",
+          "140.249.108.15",
+          "140.249.106.80",
+          "182.40.130.76",
+          "182.40.51.84",
+          "140.249.111.36",
+          "140.249.108.16",
+          "140.249.111.37",
+          "182.40.51.82"
+        ],
+        "tcpDnsAnswers": [
+          "182.40.51.81",
+          "140.249.106.84",
+          "182.40.51.84",
+          "182.40.51.82",
+          "182.40.130.74",
+          "140.249.108.17",
+          "140.249.108.16",
+          "140.249.111.39",
+          "140.249.111.36",
+          "140.249.111.41",
+          "182.40.130.78",
+          "182.40.130.79"
+        ]
+      },
+      {
+        "host": "api.amemv.com",
+        "systemCacheAddresses": [
+          "182.40.140.146",
+          "182.40.140.147",
+          "182.40.140.148",
+          "182.40.140.149",
+          "182.40.140.150"
+        ],
+        "udpDnsAnswers": [
+          "182.40.140.146",
+          "182.40.140.147",
+          "182.40.140.148",
+          "182.40.140.149",
+          "182.40.140.150"
+        ],
+        "tcpDnsAnswers": [
+          "182.40.140.149",
+          "182.40.140.150",
+          "182.40.140.146",
+          "182.40.140.147",
+          "182.40.140.148"
+        ]
+      },
+      {
+        "host": "v26-web.douyinvod.com",
+        "systemCacheAddresses": [
+          "198.18.0.5"
+        ],
+        "udpDnsAnswers": [
+          "182.40.214.28",
+          "103.254.79.157",
+          "103.254.79.162",
+          "103.254.79.170",
+          "103.254.79.172",
+          "103.254.79.176",
+          "103.254.79.177",
+          "182.40.214.25",
+          "182.40.214.26",
+          "182.40.214.27"
+        ],
+        "tcpDnsAnswers": [
+          "182.40.214.28",
+          "103.254.79.157",
+          "103.254.79.162",
+          "103.254.79.170",
+          "103.254.79.172",
+          "103.254.79.176",
+          "103.254.79.177",
+          "182.40.214.25",
+          "182.40.214.26",
+          "182.40.214.27"
+        ]
+      },
+      {
+        "host": "p3-pc-sign.douyinpic.com",
+        "systemCacheAddresses": [
+          "198.18.0.8"
+        ],
+        "udpDnsAnswers": [
+          "140.249.111.7",
+          "140.249.111.8",
+          "140.249.111.9",
+          "140.249.111.10",
+          "140.249.111.11",
+          "140.249.111.4",
+          "140.249.111.5",
+          "140.249.111.6"
+        ],
+        "tcpDnsAnswers": [
+          "140.249.111.7",
+          "140.249.111.8",
+          "140.249.111.9",
+          "140.249.111.10",
+          "140.249.111.11",
+          "140.249.111.4",
+          "140.249.111.5",
+          "140.249.111.6"
+        ]
+      }
+    ],
+    "systemResolvers": [
+      {
+        "servers": [
+          "114.114.114.114"
+        ],
+        "order": null,
+        "scoped": false
+      },
+      {
+        "servers": [
+          "114.114.114.114"
+        ],
+        "order": null,
+        "scoped": true
+      }
+    ]
+  },
+  "nativeApiResults": [
+    {
+      "sampleKind": "video",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 49,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "video",
+      "inputKind": "canonicalWorkLink",
+      "status": 200,
+      "elapsedMilliseconds": 700,
+      "workType": "video",
+      "itemCount": 1,
+      "imageSourceCount": 0,
+      "videoSourceCount": 2
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 4,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "imageAlbum",
+      "inputKind": "canonicalWorkLink",
+      "status": 200,
+      "elapsedMilliseconds": 1198,
+      "workType": "album",
+      "itemCount": 12,
+      "imageSourceCount": 24,
+      "videoSourceCount": 0
+    },
+    {
+      "sampleKind": "livePhoto",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 4,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "livePhoto",
+      "inputKind": "canonicalWorkLink",
+      "status": 200,
+      "elapsedMilliseconds": 698,
+      "workType": "album",
+      "itemCount": 1,
+      "imageSourceCount": 2,
+      "videoSourceCount": 2
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "inputKind": "shareText",
+      "status": 503,
+      "elapsedMilliseconds": 4,
+      "errorCode": "UPSTREAM_UNAVAILABLE"
+    },
+    {
+      "sampleKind": "mixedAlbum",
+      "inputKind": "canonicalWorkLink",
+      "status": 200,
+      "elapsedMilliseconds": 534,
+      "workType": "album",
+      "itemCount": 4,
+      "imageSourceCount": 8,
+      "videoSourceCount": 2
+    }
+  ],
+  "defaultDnsContainer": {
+    "observedAt": "2026-10-31T09:44:35.072675+00:00",
+    "imageBuild": "passed",
+    "platform": "Linux container",
+    "realSamples": [
+      {
+        "sampleKind": "video",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 28,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "imageAlbum",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 5,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "livePhoto",
+        "route": "/api/v1/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 5,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      },
+      {
+        "sampleKind": "mixedAlbum",
+        "route": "/api/v1/platforms/douyin/resolve",
+        "status": 503,
+        "elapsedMilliseconds": 5,
+        "errorCode": "UPSTREAM_UNAVAILABLE"
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/v1/platforms",
+        "status": 200,
+        "enabled": true,
+        "capabilities": {
+          "video": "supported",
+          "imageAlbum": "supported",
+          "livePhoto": "supported",
+          "mixedAlbum": "supported"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/platforms/douyin/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      }
+    ],
+    "publicDnsOverrides": false,
+    "cookieInputRejected": true,
+    "allRealSamplesPassed": false,
+    "user": "1654",
+    "readOnlyRootFilesystem": true,
+    "filesystemChanges": 0,
+    "imageId": "sha256:b3aae20dfa1032fe1b1d7d903fd16cfb722c7fc0a9a6e84140c7553ada0f553c",
+    "containerVerification": "mediaResolutionFailed"
+  },
+  "explicitDnsServerContainer": {
+    "observedAt": "2026-10-31T09:51:09.552730+00:00",
+    "imageBuild": "passed",
+    "platform": "Linux container",
+    "realSamples": [
+      {
+        "sampleKind": "video",
+        "route": "/api/v1/resolve",
+        "status": 200,
+        "elapsedMilliseconds": 1588,
+        "workType": "video",
+        "itemTypes": [
+          "video"
+        ],
+        "imageSources": 0,
+        "videoSources": 2
+      },
+      {
+        "sampleKind": "imageAlbum",
+        "route": "/api/v1/resolve",
+        "status": 200,
+        "elapsedMilliseconds": 1790,
+        "workType": "album",
+        "itemTypes": [
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image"
+        ],
+        "imageSources": 24,
+        "videoSources": 0
+      },
+      {
+        "sampleKind": "livePhoto",
+        "route": "/api/v1/resolve",
+        "status": 200,
+        "elapsedMilliseconds": 2266,
+        "workType": "album",
+        "itemTypes": [
+          "livePhoto"
+        ],
+        "imageSources": 2,
+        "videoSources": 2
+      },
+      {
+        "sampleKind": "mixedAlbum",
+        "route": "/api/v1/platforms/douyin/resolve",
+        "status": 200,
+        "elapsedMilliseconds": 1588,
+        "workType": "album",
+        "itemTypes": [
+          "image",
+          "image",
+          "image",
+          "livePhoto"
+        ],
+        "imageSources": 8,
+        "videoSources": 2
+      }
+    ],
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/v1/platforms",
+        "status": 200,
+        "enabled": true,
+        "capabilities": {
+          "video": "supported",
+          "imageAlbum": "supported",
+          "livePhoto": "supported",
+          "mixedAlbum": "supported"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/platforms/douyin/resolve",
+        "status": 422,
+        "code": "UNSUPPORTED_RESOURCE"
+      }
+    ],
+    "publicDnsOverrides": false,
+    "dnsServerOverride": "114.114.114.114",
+    "cookieInputRejected": true,
+    "allRealSamplesPassed": true,
+    "user": "1654",
+    "readOnlyRootFilesystem": true,
+    "filesystemChanges": 0,
+    "imageId": "sha256:b3aae20dfa1032fe1b1d7d903fd16cfb722c7fc0a9a6e84140c7553ada0f553c",
+    "containerVerification": "passed"
+  },
+  "callerDownloads": {
+    "observedAt": "2026-10-31T09:53:23.527077+00:00",
+    "independentClient": "Python http.client",
+    "cookieJar": false,
+    "systemDns": true,
+    "dnsOverrides": false,
+    "hostsOverrides": false,
+    "results": [
+      {
+        "sampleKind": "video",
+        "workType": "video",
+        "itemTypes": [
+          "video"
+        ],
+        "items": [
+          {
+            "index": 1,
+            "type": "video",
+            "assets": [
+              {
+                "host": "v26-web.douyinvod.com",
+                "status": 200,
+                "mimeType": "video/mp4",
+                "bytes": 6691094,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "tracks": [
+                  "soun",
+                  "vide"
+                ],
+                "role": "video"
+              }
+            ],
+            "videoPassed": true
+          }
+        ],
+        "allRequiredDownloaded": true
+      },
+      {
+        "sampleKind": "imageAlbum",
+        "workType": "album",
+        "itemTypes": [
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image",
+          "image"
+        ],
+        "items": [
+          {
+            "index": 1,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 28310,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 2,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p9-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 94346,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 3,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 49238,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 4,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p9-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 45176,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 5,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 146386,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 6,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p9-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 50694,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 7,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 119134,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 8,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 48560,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 9,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 40648,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 10,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p9-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 65050,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 11,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 35618,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 12,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 52780,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          }
+        ],
+        "allRequiredDownloaded": true
+      },
+      {
+        "sampleKind": "livePhoto",
+        "workType": "album",
+        "itemTypes": [
+          "livePhoto"
+        ],
+        "items": [
+          {
+            "index": 1,
+            "type": "livePhoto",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 184038,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              },
+              {
+                "host": "v26-web.douyinvod.com",
+                "status": 200,
+                "mimeType": "video/mp4",
+                "bytes": 185547,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "tracks": [
+                  "soun",
+                  "vide"
+                ],
+                "role": "video"
+              }
+            ],
+            "imagePassed": true,
+            "videoPassed": true
+          }
+        ],
+        "allRequiredDownloaded": true
+      },
+      {
+        "sampleKind": "mixedAlbum",
+        "workType": "album",
+        "itemTypes": [
+          "image",
+          "image",
+          "image",
+          "livePhoto"
+        ],
+        "items": [
+          {
+            "index": 1,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 138734,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 2,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p9-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 251662,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 3,
+            "type": "image",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 183012,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              }
+            ],
+            "imagePassed": true
+          },
+          {
+            "index": 4,
+            "type": "livePhoto",
+            "assets": [
+              {
+                "host": "p3-pc-sign.douyinpic.com",
+                "status": 200,
+                "mimeType": "image/webp",
+                "bytes": 48362,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "role": "image"
+              },
+              {
+                "host": "v26-web.douyinvod.com",
+                "status": 200,
+                "mimeType": "video/mp4",
+                "bytes": 172760,
+                "cookieSent": false,
+                "setCookieObserved": false,
+                "declaredSizeMatched": true,
+                "apiSizeMatched": true,
+                "tracks": [
+                  "soun",
+                  "vide"
+                ],
+                "role": "video"
+              }
+            ],
+            "imagePassed": true,
+            "videoPassed": true
+          }
+        ],
+        "allRequiredDownloaded": true
+      }
+    ]
+  },
+  "nativeDecoding": {
+    "allDecoded": true,
+    "nativeDecoder": "ImageIO and AVFoundation",
+    "results": [
+      {
+        "audioDecoded": true,
+        "decoded": true,
+        "durationSeconds": 8.134,
+        "index": 1,
+        "role": "video",
+        "sampleKind": "video",
+        "videoDecoded": true
+      },
+      {
+        "decoded": true,
+        "height": 986,
+        "index": 1,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1632,
+        "index": 2,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1126,
+        "index": 3,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 962,
+        "index": 4,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1256,
+        "index": 5,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 876,
+        "index": 6,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1000,
+        "index": 7,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 992,
+        "index": 8,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1082,
+        "index": 9,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1016,
+        "index": 10,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 834,
+        "index": 11,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 1248,
+        "index": 12,
+        "role": "image",
+        "sampleKind": "imageAlbum",
+        "width": 1170
+      },
+      {
+        "decoded": true,
+        "height": 2880,
+        "index": 1,
+        "role": "image",
+        "sampleKind": "livePhoto",
+        "width": 2160
+      },
+      {
+        "audioDecoded": true,
+        "decoded": true,
+        "durationSeconds": 3.108548752834467,
+        "index": 1,
+        "role": "video",
+        "sampleKind": "livePhoto",
+        "videoDecoded": true
+      },
+      {
+        "decoded": true,
+        "height": 2880,
+        "index": 1,
+        "role": "image",
+        "sampleKind": "mixedAlbum",
+        "width": 2160
+      },
+      {
+        "decoded": true,
+        "height": 2880,
+        "index": 2,
+        "role": "image",
+        "sampleKind": "mixedAlbum",
+        "width": 2160
+      },
+      {
+        "decoded": true,
+        "height": 1440,
+        "index": 3,
+        "role": "image",
+        "sampleKind": "mixedAlbum",
+        "width": 2560
+      },
+      {
+        "decoded": true,
+        "height": 1440,
+        "index": 4,
+        "role": "image",
+        "sampleKind": "mixedAlbum",
+        "width": 1080
+      },
+      {
+        "audioDecoded": true,
+        "decoded": true,
+        "durationSeconds": 1.834,
+        "index": 4,
+        "role": "video",
+        "sampleKind": "mixedAlbum",
+        "videoDecoded": true
+      }
+    ]
+  },
+  "summary": {
+    "nativeShareTextPassed": false,
+    "nativeCanonicalLinksPassed": true,
+    "defaultContainerShareTextPassed": false,
+    "explicitDnsServerContainerShareTextPassed": true,
+    "requiredResourcesDownloadedAndDecoded": 20
+  },
+  "privacy": "No real share text, work ID, full redirect URL, media URL, or raw metadata body is included."
+}
