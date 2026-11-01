@@ -2,7 +2,7 @@
 
 抖音变更已同步主 specs 并合并到 master。变更开始时 Minimal API、平台注册表和响应 DTO 已具备扩展入口，而 HTTP 请求头、目标范围及客户端注册仍面向抖音。本次已引入不可变平台 HTTP 配置和独立客户端装配，保留抖音默认绑定及现有契约。
 
-本变更继承[平台路由规范](../../specs/platform-routing/spec.md)与[媒体结果契约](../../specs/media-resolution-api/spec.md)：输入仅含 text，服务返回最终 CDN URL 和每个候选的完整 headers；调用方负责实际下载和保存。当前 video 项只能表达同一逻辑视频的完整备用文件，不能表达需要组合的音视频轨道或连续分段。
+本变更继承[平台路由规范](../../../specs/platform-routing/spec.md)与[媒体结果契约](../../../specs/media-resolution-api/spec.md)：输入仅含 text，服务返回最终 CDN URL 和每个候选的完整 headers；调用方负责实际下载和保存。当前 video 项只能表达同一逻辑视频的完整备用文件，不能表达需要组合的音视频轨道或连续分段。
 
 2026-10-31 的依据和证据范围：
 
@@ -12,7 +12,7 @@
 | 工作区参考项目 `Douyin_TikTok_Download_API-5.1.8` 的 `src/dtk/platforms/bilibili`、`src/dtk/signing/native/wbi.py` 和 `wbi_keys.py` | 有详情→选定 CID→播放地址流程、公开 WBI 参数与本地计算、单段 MP4 判定；参考参数包含 fnval=1、platform=html5 | 参考链路存在游客/身份基础设施，其成功不是 MediaLens 严格无身份解析的证据 |
 | [yt-dlp 的 Bilibili 实现](https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/extractor/bilibili.py) | 分别处理 DASH 轨道和 durl 分段，包含 WBI 及指纹参数处理 | 不把其指纹生成、登录或格式合并路径带入本项目，也不据此宣称匿名完整 MP4 一定可得 |
 
-实施结论：正式适配器已完成六类真实匿名解析与独立完整 MP4 下载，画面/音轨及所选 P 均通过系统解码核对。选定入口、网络条件和最终 API/容器状态见[验证记录](../../../docs/validation/cookie-free-bilibili.md)；参考材料不替代这些实测。
+实施结论：正式适配器已完成六类真实匿名解析与独立完整 MP4 下载，画面/音轨及所选 P 均通过系统解码核对。选定入口、网络条件和最终 API/容器状态见[验证记录](../../../../docs/validation/cookie-free-bilibili.md)；参考材料不替代这些实测。
 
 ### 既有接口与扩展点兼容性核对
 
@@ -26,7 +26,7 @@
 | ShareUrlExtractor | 复用通用 URL 提取，BV/AV/p 交给 Bilibili 链接规则 | 不为新平台复制提取器，抖音标点、顺序和查询优先级保持 |
 | Program 中的上游客户端注册 | 按平台装配并由容器持有客户端 | 保留抖音默认绑定，Bilibili 不能复用抖音固定 Referer/目标策略 |
 
-核对依据为当前[路由注册](../../../src/MediaLens.Api/MediaResolutionEndpoints.cs)、[解析分发](../../../src/MediaLens.Core/Resolution/ResolutionService.cs)、[适配器接口](../../../src/MediaLens.Core/Platforms/IPlatformAdapter.cs)、[契约](../../../src/MediaLens.Core/Contracts/MediaContracts.cs)和[已有第二平台回归](../../../tests/MediaLens.Tests/ApiTests.cs)。新增平台标识属于既有开放字符串的扩展，继续使用 v1；本次不要求抖音调用方改变请求或响应读取方式。
+核对依据为当前[路由注册](../../../../src/MediaLens.Api/MediaResolutionEndpoints.cs)、[解析分发](../../../../src/MediaLens.Core/Resolution/ResolutionService.cs)、[适配器接口](../../../../src/MediaLens.Core/Platforms/IPlatformAdapter.cs)、[契约](../../../../src/MediaLens.Core/Contracts/MediaContracts.cs)和[已有第二平台回归](../../../../tests/MediaLens.Tests/ApiTests.cs)。新增平台标识属于既有开放字符串的扩展，继续使用 v1；本次不要求抖音调用方改变请求或响应读取方式。
 
 ## Goals / Non-Goals
 
@@ -176,5 +176,9 @@ Bilibili 元数据候选主机为 www.bilibili.com、m.bilibili.com、api.bilibi
 
 - 当前选定的第一方未签名详情与播放入口已通过六类匿名和完整文件验证；后续需观察协议、风控或地域变化，退化时按既有明确错误失败，不加入身份回退。
 - 已确认的 CDN 范围为 bilivideo.com；候选尺寸和过期语义仍可能缺失，未知值保持 null，新域名不会自动放行。
-- 普通音频视频、约 9 分钟长视频和两个不同 P 已分别验收，证据见[验证记录](../../../docs/validation/cookie-free-bilibili.md)；样本通过不代表覆盖全部视频。
+- 普通音频视频、约 9 分钟长视频和两个不同 P 已分别验收，证据见[验证记录](../../../../docs/validation/cookie-free-bilibili.md)；样本通过不代表覆盖全部视频。
 - 若将来需要 DASH、全部分 P 或图文，应另立提案表达组合下载及完整性，不改变当前备用列表语义。
+
+## 归档记录
+
+2026-11-01，已核对 25/25 项任务及全部产物完成，新增 Bilibili 主规格并合并三份共享主规格；归档前重新通过 742 项测试和格式检查。已有普通 UGC 完整 MP4、所选 P、无 Cookie 及网络安全边界保持不变。
