@@ -130,6 +130,22 @@ CDN addresses may expire. Re-resolve the original share if a download fails beca
 
 Errors have stable `code` values: `UNAUTHORIZED` uses 401 with `WWW-Authenticate: Bearer`; `INVALID_INPUT` and `PLATFORM_MISMATCH` use 400; `PLATFORM_NOT_FOUND` and confirmed `CONTENT_UNAVAILABLE` use 404; disabled platforms, anonymous unavailability, incomplete media, and unsupported resources use 422. `UPSTREAM_CHANGED` uses 502, temporary `UPSTREAM_UNAVAILABLE` uses 503, and `RESOLUTION_TIMEOUT` uses 504. Framework errors use the same response shape. Temporary failures may be retried; identity or input failures do not trigger a session fallback.
 
+## iPhone / iPad shortcut
+
+[Download the MediaLens Video Download shortcut](shortcuts/MediaLens%20Video%20Download.shortcut) to resolve shared content with MediaLens and save videos, images, and Live Photos to Photos. Live Photos require [Actions](https://sindresorhus.com/actions); the remaining steps use built-in Shortcuts actions.
+
+1. Start the MediaLens service at an address reachable from your iPhone or iPad, and have its configured `SECRET_TOKEN` ready. Install Actions before using Live Photos.
+2. Download and open the `.shortcut` file on the device, then tap **Add Shortcut**. On GitHub, download the raw file from its file page. You can also import it on a Mac and sync it to your device with iCloud.
+3. Edit **MediaLens Video Download** in Shortcuts and update the dictionary at the beginning:
+   - `apiBase`: the service root, such as `https://media.example.com`, without a trailing slash or `/api/v1/resolve`. `127.0.0.1` refers to the current device, not a different computer.
+   - `secretToken`: the same token as the service's `SECRET_TOKEN`, without the `Bearer` prefix.
+4. Choose **MediaLens Video Download** from the share sheet of a supported post. Allow network and Photos access when prompted on the first run. If it is missing from the share sheet, enable **Show in Share Sheet** in the shortcut's details.
+5. After saving, you can choose **打开照片** (Open Photos); partial failures are reported. API error responses display their error message. The shortcut's prompts and menu labels are in Chinese.
+
+The shortcut processes media items in order and uses each candidate's own headers. If a candidate returns content that is not the expected media, it tries the next one; re-share and resolve again if all candidates are unavailable. A system network action may stop immediately on a connection failure, timeout, or similar exception, before fallback or a final prompt. Actions creates a Live Photo from the video and chooses its cover from that video; the returned still-image source is not used.
+
+The token is stored in plain text in the shortcut dictionary. Do not share or commit a shortcut copy containing a real token.
+
 ## Technology
 
 | Area | Choice |

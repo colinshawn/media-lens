@@ -130,6 +130,22 @@ CDN 地址可能失效。下载因地址过期失败时，应重新解析原分�
 
 错误通过稳定的 `code` 判断：`UNAUTHORIZED` 使用 401，并返回 `WWW-Authenticate: Bearer`；`INVALID_INPUT`、`PLATFORM_MISMATCH` 使用 400；`PLATFORM_NOT_FOUND`、有明确证据的 `CONTENT_UNAVAILABLE` 使用 404；平台关闭、匿名不可用、媒体缺失和资源不支持使用 422。`UPSTREAM_CHANGED` 为 502，暂时故障 `UPSTREAM_UNAVAILABLE` 为 503，`RESOLUTION_TIMEOUT` 为 504。框架错误使用相同结构；仅暂时故障提示可重试，不会因身份或输入问题建立会话回退。
 
+## iPhone / iPad 快捷指令
+
+[下载 MediaLens Video Download 快捷指令](shortcuts/MediaLens%20Video%20Download.shortcut)，可从分享表单调用 MediaLens，将解析到的视频、图片和实况照片保存到系统照片。实况照片需要安装 [Actions](https://sindresorhus.com/actions)，其余步骤使用系统快捷指令操作。
+
+1. 确保 MediaLens 服务已启动，且 iPhone / iPad 能访问服务地址；准备服务配置的 `SECRET_TOKEN`。使用实况照片功能前，请先安装 Actions。
+2. 在设备上下载上述 `.shortcut` 文件并打开，选择“添加快捷指令”。在 GitHub 文件页面可通过下载原始文件获取；也可以先在 Mac 上导入，再通过 iCloud 同步到手机。
+3. 在“快捷指令”中编辑 **MediaLens Video Download**，在开头的词典中填写：
+   - `apiBase`：服务根地址，例如 `https://media.example.com`，不带末尾斜杠或 `/api/v1/resolve`。`127.0.0.1` 指向当前设备，不能用来访问另一台机器上的服务。
+   - `secretToken`：与服务 `SECRET_TOKEN` 相同的令牌本体，不含 `Bearer` 前缀。
+4. 从受支持作品的分享菜单中选择 **MediaLens Video Download**，首次运行时按系统提示允许网络和照片访问。未看到快捷指令时，在其详细信息中启用“在共享表单中显示”。
+5. 保存完成后可选择“打开照片”；部分项目失败时会提示。接口返回错误时会显示错误信息。
+
+快捷指令按媒体项顺序处理候选，并使用各候选自己的请求头。当候选返回的内容不是目标媒体时，会尝试下一个候选；若所有候选均不可用，请重新分享并解析。系统网络动作遇到连接失败或超时等异常时可能直接终止，无法继续回退或显示最终提示。实况照片由 Actions 从视频生成，封面由其从视频中选取，不使用接口返回的静态图源。
+
+令牌以明文保存在快捷指令词典中；不要分享或提交填入真实令牌的快捷指令副本。
+
 ## 技术选型
 
 | 范围 | 选型 |
