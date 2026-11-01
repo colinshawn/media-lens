@@ -1,0 +1,172 @@
+{
+  "observedOn": "2026-10-31",
+  "stage": "formal-api-linux-container-and-independent-client",
+  "cookieSent": false,
+  "setCookieReused": false,
+  "identityConstructed": false,
+  "dns": {
+    "diagnosticPublicMappings": true,
+    "publicIpPolicyDisabled": false,
+    "hostNetworkChanged": false
+  },
+  "cases": [
+    {
+      "kind": "public-1",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    },
+    {
+      "kind": "public-2",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    },
+    {
+      "kind": "legacy-av",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    },
+    {
+      "kind": "user-short",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    },
+    {
+      "kind": "multipart-1",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    },
+    {
+      "kind": "multipart-2",
+      "passed": true,
+      "items": 1,
+      "videoSources": 1,
+      "cookieObserved": false
+    }
+  ],
+  "downloads": {
+    "completeFiles": 6,
+    "allByteCountsMatch": true,
+    "allVideoAndAudioDecoded": true,
+    "durationComparison": "one actual video frame plus 1ms container precision",
+    "maximumObservedDurationDifferenceMs": 9.001,
+    "bvAvFilesIdentical": true,
+    "differentPartsHaveDifferentFiles": true,
+    "formalApiCompleteDownloads": 6,
+    "formalApiFilesMatchNativeDecodedFiles": true
+  },
+  "rawSamplesStoredInRepository": false,
+  "containerValidation": {
+    "image": "media-lens:bilibili-local",
+    "imageId": "sha256:a5882088b087136d291f4265a95ad8d85cc0cae1b1bc5c35b1c22e9f15106059",
+    "runningUser": "1654",
+    "readOnlyRoot": true,
+    "persistentChanges": 0,
+    "ordinarySystemDns": true,
+    "temporaryRealDnsServer": true,
+    "hostsMappings": false,
+    "hostNetworkChanged": false,
+    "bilibiliCases": [
+      {
+        "kind": "public-1",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      },
+      {
+        "kind": "public-2",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      },
+      {
+        "kind": "legacy-av",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      },
+      {
+        "kind": "user-short",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      },
+      {
+        "kind": "multipart-1",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      },
+      {
+        "kind": "multipart-2",
+        "status": 200,
+        "items": 1,
+        "videoSources": 1
+      }
+    ],
+    "bothPostRoutesForUserSample": true,
+    "douyinRegression": [
+      {
+        "kind": "video",
+        "status": 200,
+        "items": 1
+      },
+      {
+        "kind": "imageAlbum",
+        "status": 200,
+        "items": 12
+      },
+      {
+        "kind": "livePhoto",
+        "status": 200,
+        "items": 1
+      },
+      {
+        "kind": "mixedAlbum",
+        "status": 200,
+        "items": 4
+      }
+    ],
+    "discoveryPlatforms": 2,
+    "inboundCookieRejected": true,
+    "extraBodyFieldRejected": true,
+    "platformMismatchPreserved": true,
+    "logsContainRealWorkIds": false
+  },
+  "cliValidation": {
+    "passed": true,
+    "cases": 6,
+    "defaultEntryPoint": "adapter",
+    "cookieObserved": false,
+    "rawUrlsOrWorkIdsInOutput": false,
+    "invalidEntryRejected": true,
+    "unsupportedKindRejected": true,
+    "linuxReadOnlyContainer": true,
+    "inputStoredOutsideRepository": true
+  },
+  "temporaryValidationResources": {
+    "temporaryDnsContainerRemoved": true,
+    "temporaryNetworkRemoved": true,
+    "hostNetworkChanged": false
+  },
+  "checks": {
+    "releaseBuild": "passed",
+    "warnings": 0,
+    "errors": 0,
+    "format": "passed",
+    "testsPassed": 742,
+    "testsSkipped": 0,
+    "probeTests": 567,
+    "apiAndMediaTests": 175,
+    "openSpecStrictItemsPassed": 5
+  }
+}

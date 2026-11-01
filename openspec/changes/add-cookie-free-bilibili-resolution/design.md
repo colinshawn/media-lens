@@ -1,6 +1,6 @@
 ## Context
 
-抖音变更已同步主 specs 并合并到 master。现有 Minimal API、平台注册表和响应 DTO 已具备扩展入口，但 `HttpDefaults.Referer`、`PublicHttpTargetPolicy` 的域名范围以及 API 的上游客户端注册仍面向抖音，不能仅加入 Bilibili 适配器就认为网络组件已经通用。
+抖音变更已同步主 specs 并合并到 master。变更开始时 Minimal API、平台注册表和响应 DTO 已具备扩展入口，而 HTTP 请求头、目标范围及客户端注册仍面向抖音。本次已引入不可变平台 HTTP 配置和独立客户端装配，保留抖音默认绑定及现有契约。
 
 本变更继承[平台路由规范](../../specs/platform-routing/spec.md)与[媒体结果契约](../../specs/media-resolution-api/spec.md)：输入仅含 text，服务返回最终 CDN URL 和每个候选的完整 headers；调用方负责实际下载和保存。当前 video 项只能表达同一逻辑视频的完整备用文件，不能表达需要组合的音视频轨道或连续分段。
 
@@ -12,7 +12,7 @@
 | 工作区参考项目 `Douyin_TikTok_Download_API-5.1.8` 的 `src/dtk/platforms/bilibili`、`src/dtk/signing/native/wbi.py` 和 `wbi_keys.py` | 有详情→选定 CID→播放地址流程、公开 WBI 参数与本地计算、单段 MP4 判定；参考参数包含 fnval=1、platform=html5 | 参考链路存在游客/身份基础设施，其成功不是 MediaLens 严格无身份解析的证据 |
 | [yt-dlp 的 Bilibili 实现](https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/extractor/bilibili.py) | 分别处理 DASH 轨道和 durl 分段，包含 WBI 及指纹参数处理 | 不把其指纹生成、登录或格式合并路径带入本项目，也不据此宣称匿名完整 MP4 一定可得 |
 
-本次只形成方案与验收任务，尚未进行 MediaLens 的 Bilibili 真实匿名解析及完整文件验证。候选路径和参数需在实施前置任务中核实；所有成功声明必须晚于对应实测。
+实施结论：正式适配器已完成六类真实匿名解析与独立完整 MP4 下载，画面/音轨及所选 P 均通过系统解码核对。选定入口、网络条件和最终 API/容器状态见[验证记录](../../../docs/validation/cookie-free-bilibili.md)；参考材料不替代这些实测。
 
 ### 既有接口与扩展点兼容性核对
 
@@ -63,9 +63,9 @@ p 只来自 text 中分享 URL 的查询参数，不作为路由段或 ResolveRe
 
 ### 2. 先验证最小匿名入口，再固定请求顺序
 
-候选元数据来源为公开作品页的结构化数据，以及第一方 `/x/web-interface/wbi/view`；可在验证记录中比较旧 view 入口，但不预设其可用。候选播放入口为 `/x/player/wbi/playurl`。优先复用同一受控匿名链路取得的数据，不运行网页脚本或随意遍历接口。
+实测选定第一方 `/x/web-interface/view` 与 `/x/player/playurl` 的最小未签名链路；必要时有界回退到对应 WBI 入口。当前普通样本不需要 Cookie、指纹或页面脚本，不运行接口全排列。短链的公开页面只用于取得最终作品链接，不以推荐数据替代详情身份校验。
 
-播放请求以 BV、已匹配 CID 和固定格式参数为输入。参考实现的 fnval=1、fnver=0、platform=html5 只作为 progressive MP4 实验起点；qn 等参数依据实测固化，不保证请求画质等于实际返回画质，不在本次 API 增加画质字段。既不主动请求试看，也不生成 dm_img 等指纹字段。
+播放请求以 BV、已匹配 CID 和固定格式参数为输入。实测采用 fnval=1、fnver=0、platform=html5、fourk=0、high_quality=1、qn=80；样本响应实际 quality=64，不保证请求画质等于实际返回画质，不在本次 API 增加画质字段。既不主动请求试看，也不生成 dm_img 等指纹字段。
 
 元数据必须与请求的 BV/AID 一致；播放数据必须来自所选 CID 的受控请求。页面中的推荐内容、其他稿件或其他分 P 不能充当失败回退。若数据表明内容是付费、充电专属、互动/番剧跳转或预览，拒绝对应范围，不输出截短内容。
 
@@ -172,9 +172,9 @@ Bilibili 元数据候选主机为 www.bilibili.com、m.bilibili.com、api.bilibi
 4. 同步中英文 README 与脱敏证据；不需要数据迁移或新增服务。若后续退化，关闭 Bilibili 解析或撤回该部署，保留抖音；不自动启用 Cookie 回退。
 5. 所有验收通过后再同步主 specs 并归档本变更；未通过完整匿名路线时保留任务未完成。
 
-## Open Questions
+## 后续观察与开放问题
 
-- 当前网络中，哪个不带 Cookie/指纹的公开入口能稳定返回所选 P 的完整 progressive MP4？前置验证决定具体路径、参数与支持边界。
-- 返回的 CDN 根、过期参数语义及候选尺寸信息是否足以可靠确认？无法确认的技术字段保持 null，新域名不会自动进入允许列表。
-- 普通音频视频、较长视频和非首 P 的匿名表现是否一致？需要分别实测；不能用单个短样本证明全部支持。
-- 将来若需要 DASH、全部分 P 或图文，如何表达下载组合及完整性？属于后续提案，不通过扩展当前备用列表的含义解决。
+- 当前选定的第一方未签名详情与播放入口已通过六类匿名和完整文件验证；后续需观察协议、风控或地域变化，退化时按既有明确错误失败，不加入身份回退。
+- 已确认的 CDN 范围为 bilivideo.com；候选尺寸和过期语义仍可能缺失，未知值保持 null，新域名不会自动放行。
+- 普通音频视频、约 9 分钟长视频和两个不同 P 已分别验收，证据见[验证记录](../../../docs/validation/cookie-free-bilibili.md)；样本通过不代表覆盖全部视频。
+- 若将来需要 DASH、全部分 P 或图文，应另立提案表达组合下载及完整性，不改变当前备用列表语义。

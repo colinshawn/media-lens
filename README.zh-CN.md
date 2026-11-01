@@ -6,7 +6,7 @@
 
 MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目标是将公开分享文本解析为结构化的视频、图片和实况照片资源。调用方取得资源信息后，自行下载并保存到本地存储或相册。
 
-> **当前状态：抖音视频、普通图集、实况图集和混合图集均已实测通过。** 2026-10-31 的公开样本完成 Minimal API 解析及独立客户端 CDN 下载，最终四类样本的 20 个必需资源全部可解码。抖音已启用，四类能力为 `supported`。验证范围和依据见[验证记录](docs/validation/cookie-free-douyin.md)。
+> **当前状态：已支持抖音四类媒体及 Bilibili 普通公开视频的完整 MP4 解析。** 两个平台均保持严格无 Cookie。抖音视频、普通图集、实况和混合图集的验证见[抖音记录](docs/validation/cookie-free-douyin.md)；Bilibili 的 BV/AV、短链、分 P、完整音视频下载及网络条件见[Bilibili 记录](docs/validation/cookie-free-bilibili.md)。
 
 ## 项目目标
 
@@ -16,7 +16,7 @@ MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目�
 - 保留图集顺序，以及每张实况照片的静态图与动态短片的配对关系。
 - 提供精简的 HTTP API，通过平台适配器组织各平台的解析逻辑。
 
-首期支持抖音公开分享；后续平台通过独立适配器及匿名验证接入。
+当前支持抖音公开分享与 Bilibili 普通 UGC 视频；其他平台通过独立适配器及匿名验证接入。
 
 ## 无 Cookie 边界
 
@@ -43,21 +43,34 @@ MediaLens 是一个使用 .NET 10 开发的社交分享内容解析项目，目�
 
 解析服务负责返回资源地址与元数据。媒体下载、本地文件保存、相册权限，以及系统原生实况照片的封装或导入，由调用方负责。
 
+## 平台支持范围
+
+| 平台 | 视频 | 普通图集 | 实况 / 混合图集 |
+| --- | --- | --- | --- |
+| 抖音 douyin | 已支持 | 已支持 | 已支持 |
+| Bilibili bilibili | 普通 UGC 的完整单段 MP4 | 未实现 | 未实现 |
+
+Bilibili 接受 BV/AV 完整视频链接与 b23.tv 短链；AV 通过可信详情规范化为 BV。一个请求仅解析一个分 P，省略 p 时选择第 1 P，指定时从分享 URL 的 `?p=2` 等查询参数读取。无效或越界 p 明确失败，不增加 JSON 请求字段、平台专用路由或批量行为。
+
+Bilibili 的 workId 标识整稿 BV，所选 P 由 webUrl 的 p 区分，文件名也包含 P。同一稿件不同 P 可以有相同 workId，保存或缓存分 P 资源时需保留这个区别。
+
+首期返回无需组合的完整 MP4，并保留作品原有音频；DASH 分离轨道、连续多段、FLV/HLS、试看、番剧、直播、互动或图文返回明确失败。画质以实际匿名响应为准；请求 qn 不代表取得对应画质，未知候选尺寸保持 null。本次样本取得 quality=64 的完整媒体，不承诺所有作品都能取得同一清晰度。
+
 ## HTTP 接口
 
-以下三个端点均使用 ASP.NET Core 10 Minimal API。首期仅注册并启用抖音（`douyin`）；后续平台分别完成验证后接入。
+以下三个端点均使用 ASP.NET Core 10 Minimal API。当前注册并启用 `douyin` 与 `bilibili`，共享路由、静态 DTO 和错误契约。
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
 | POST | `/api/v1/resolve` | 根据分享文本自动识别平台并解析媒体。 |
-| POST | `/api/v1/platforms/{platform}/resolve` | 指定平台解析；抖音为 `/api/v1/platforms/douyin/resolve`。 |
+| POST | `/api/v1/platforms/{platform}/resolve` | 指定平台解析，例如 `/api/v1/platforms/douyin/resolve` 或 `/api/v1/platforms/bilibili/resolve`。 |
 | GET | `/api/v1/platforms` | 查询已注册平台、启用状态和经验证的媒体能力。 |
 
 两个 POST 接口共用 `{ "text": "公开分享文本" }` 请求体及媒体结果模型。显式平台仅增加平台约束，链接归属不匹配时明确失败，不切换到其他适配器。平台发现接口读取内存中的适配器注册表，不请求上游平台、不依赖数据库。
 
 增加平台时保持统一入口不变。平台标识使用稳定的小写字符串；视频、图片、实况通过结果类型表达，不分别建立 `/videos`、`/images`、`/live-photos` 路由。兼容版本统一位于 `/api/v1`，单纯增加平台不升级为 `/api/v2`。
 
-能力状态区分 `unverified`（未验证）、`supported`（已支持）、`unsupported`（未支持）。首期仅抖音出现在注册列表中；未经验证的类型不标记为已支持。能力状态反映实现的验证覆盖，不作为上游实时可用性探测。
+能力状态区分 `unverified`（未验证）、`supported`（已支持）、`unsupported`（未支持）。当前抖音四项均已支持，Bilibili 仅视频已支持，其他三项为 `unsupported`；未经验证的类型不标记为已支持。能力状态反映实现的验证覆盖，不作为上游实时可用性探测。
 
 ## 响应契约
 
@@ -156,7 +169,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/resolve \
   -d '{"text":"https://www.douyin.com/video/123456"}'
 ```
 
-发现接口返回 `douyin`、`enabled: true` 和四项 `supported`。两个 POST 可对可访问作品返回媒体结果；运行示例时需将合成 ID 替换为公开分享文本。入站 Cookie 头或额外身份字段会被拒绝；服务不使用数据库、媒体存储、浏览器或会话预热。
+发现接口返回 `douyin`、`bilibili` 两个平台及各自能力；两者均为 `enabled: true`。两个 POST 可对可访问作品返回媒体结果；运行示例时需将合成 ID 替换为公开分享文本。入站 Cookie 头或额外身份字段会被拒绝；服务不使用数据库、媒体存储、浏览器或会话预热。
 
 ```sh
 dotnet run --project tools/MediaLens.Probe -- \
@@ -164,6 +177,16 @@ dotnet run --project tools/MediaLens.Probe -- \
 ```
 
 输入为 `{ "kind": "video", "text": "分享文本" }` 的数组；类别可为 `video`、`imageAlbum`、`livePhoto`、`mixedAlbum`。入口可为 `share`、`mobile`、`desktop`、`detail`、`legacy`、`adapter`；后者直接验证与生产共用的适配器。报告不含原分享文本、URL、作品 ID、原始响应或 Cookie 值。真实输入和本地输出保存在仓库外，测试夹具只使用合成数据。
+
+Bilibili 使用相同仓库外输入格式，kind 仅为 video。`--platform` 缺省 douyin；Bilibili 缺省 adapter 入口，也可显式指定：
+
+```sh
+dotnet run --project tools/MediaLens.Probe -- \
+  --platform bilibili --entry adapter \
+  --input /absolute/path/outside-repo/bilibili.private.json
+```
+
+其他诊断入口保留用于抖音。报告不输出真实分享、BV/AID/CID、签名 Query 或完整媒体地址；工具只验证元数据，完整下载仍由独立客户端完成。
 
 退出码 `0` 仅表示所有输入均观察到完整媒体元数据，**不代表**调用方下载通过；`1` 表示至少一个样本未通过，`2` 表示输入不合法。[验证记录](docs/validation/cookie-free-douyin.md)包含当前结果、公网 DNS 映射限制及成功证据的适用范围。
 
@@ -184,11 +207,11 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
   -p 127.0.0.1:8080:8080 media-lens:local
 ```
 
-本机启用 TUN Fake-IP DNS 时，需为平台和 CDN 域名使用真实公网 DNS；服务会拒绝合成或保留地址。本次验证使用的临时公网映射仅保存在仓库外，详见[网络条件](docs/validation/cookie-free-douyin.md)。
+本机启用 TUN Fake-IP DNS 时，需让平台和 CDN 主机返回真实公网地址；Bilibili 包括 bilibili.com、b23.tv 和 bilivideo.com 的相应主机。服务继续拒绝合成、内网和保留地址，详见[抖音网络条件](docs/validation/cookie-free-douyin.md)与[Bilibili 网络条件](docs/validation/cookie-free-bilibili.md)。诊断 DNS 或 hosts 不作为项目部署配置。
 
 容器使用基础镜像提供的非 root 用户，不依赖浏览器、数据库、Redis、媒体卷或账号配置。环境变量 `MediaLens__ResolutionTimeoutSeconds` 可设置 1—120 秒的总解析时限，默认 30 秒；监听地址采用 ASP.NET Core 标准环境设置，镜像的 `ASPNETCORE_HTTP_PORTS` 为 8080。
 
-镜像构建、平台发现、两个 POST、Cookie 输入拒绝和只读文件系统验证均已通过，未产生持久化写入。真实媒体与部署检查分别记录，详见[容器验证结果](docs/validation/container-validation.json)。
+镜像构建、平台发现、两个 POST、Cookie 输入拒绝和只读文件系统验证均已通过，未产生持久化写入。真实媒体与部署检查分别记录，详见[抖音容器验证](docs/validation/container-validation.json)与[Bilibili API/容器证据](docs/validation/2026-10-31-bilibili-success.json)。
 
 ## 首批里程碑
 

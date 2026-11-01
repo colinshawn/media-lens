@@ -5,15 +5,14 @@ namespace MediaLens.Http;
 
 public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
 {
-    private static readonly string[] PlatformDomainRoots = ["douyin.com", "iesdouyin.com"];
-    private static readonly string[] MediaDomainRoots =
-        ["douyinvod.com", "douyinpic.com", "byteimg.com", "ibyteimg.com", "pstatp.com"];
-    private static readonly string[] AllowedDomainRoots = [.. PlatformDomainRoots, .. MediaDomainRoots];
-    private const string DouyinPlaybackHost = "aweme.snssdk.com";
+    private readonly PlatformHttpProfile _profile;
     private readonly Dictionary<string, IPAddress[]> _addressOverrides = new(StringComparer.OrdinalIgnoreCase);
 
-    public PublicHttpTargetPolicy(IReadOnlyDictionary<string, IPAddress[]>? addressOverrides = null)
+    public PublicHttpTargetPolicy(
+        IReadOnlyDictionary<string, IPAddress[]>? addressOverrides = null,
+        PlatformHttpProfile? profile = null)
     {
+        _profile = profile ?? PlatformHttpProfile.Douyin;
         if (addressOverrides is null)
         {
             return;
@@ -44,20 +43,14 @@ public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
              !uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) ||
             !string.IsNullOrEmpty(uri.UserInfo) ||
             !uri.IsDefaultPort ||
-            !(uri.IdnHost.Equals(DouyinPlaybackHost, StringComparison.OrdinalIgnoreCase) ||
-              uri.IdnHost.Equals(HttpDefaults.DouyinDetailHost, StringComparison.OrdinalIgnoreCase) ||
-              AllowedDomainRoots.Any(root =>
-                uri.IdnHost.Equals(root, StringComparison.OrdinalIgnoreCase) ||
-                uri.IdnHost.EndsWith('.' + root, StringComparison.OrdinalIgnoreCase))))
+            !_profile.AllowsHost(uri.IdnHost))
         {
             throw new UpstreamRequestException(HttpFailureCodes.TargetRejected);
         }
     }
 
     // 播放接口即便直接返回视频头，也不是本契约要求的最终 CDN 地址。
-    public bool IsFinalMediaUri(Uri uri) => MediaDomainRoots.Any(root =>
-        uri.IdnHost.Equals(root, StringComparison.OrdinalIgnoreCase) ||
-        uri.IdnHost.EndsWith('.' + root, StringComparison.OrdinalIgnoreCase));
+    public bool IsFinalMediaUri(Uri uri) => _profile.IsFinalMediaUri(uri);
 
     public async ValueTask<Stream> ConnectAsync(
         SocketsHttpConnectionContext context,

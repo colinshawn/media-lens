@@ -135,15 +135,16 @@ internal sealed record ServerReply(
     bool OmitContentLength = false,
     long? DeclaredContentLength = null);
 
-/// <summary>仅供测试把合成的抖音域名连接到本机替身；生产策略仍禁止环回地址。</summary>
-internal sealed class LoopbackTargetPolicy(int port) : IHttpTargetPolicy
+/// <summary>仅供测试把合成的平台域名连接到本机替身；生产策略仍禁止环回地址。</summary>
+internal sealed class LoopbackTargetPolicy(int port, PlatformHttpProfile? profile = null) : IHttpTargetPolicy
 {
+    private readonly PublicHttpTargetPolicy _policy = new(profile: profile);
     public void ValidateUri(Uri uri)
     {
-        new PublicHttpTargetPolicy().ValidateUri(uri);
+        _policy.ValidateUri(uri);
     }
 
-    public bool IsFinalMediaUri(Uri uri) => new PublicHttpTargetPolicy().IsFinalMediaUri(uri);
+    public bool IsFinalMediaUri(Uri uri) => _policy.IsFinalMediaUri(uri);
 
     public async ValueTask<Stream> ConnectAsync(
         SocketsHttpConnectionContext context,

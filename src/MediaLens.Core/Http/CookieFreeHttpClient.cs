@@ -10,11 +10,16 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
     private readonly IHttpTargetPolicy _targetPolicy;
     private readonly HttpClient _client;
     private readonly string _userAgent;
+    private readonly PlatformHttpProfile _profile;
 
-    public CookieFreeHttpClient(IHttpTargetPolicy targetPolicy, string userAgent = HttpDefaults.MobileUserAgent)
+    public CookieFreeHttpClient(
+        IHttpTargetPolicy targetPolicy,
+        string? userAgent = null,
+        PlatformHttpProfile? profile = null)
     {
         _targetPolicy = targetPolicy;
-        _userAgent = userAgent;
+        _profile = profile ?? PlatformHttpProfile.Douyin;
+        _userAgent = userAgent ?? _profile.UserAgent;
         var handler = new SocketsHttpHandler
         {
             UseCookies = false,
@@ -55,7 +60,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
             using var request = new HttpRequestMessage(HttpMethod.Get, current);
             request.Headers.UserAgent.ParseAdd(_userAgent);
             request.Headers.Accept.ParseAdd(HttpDefaults.Accept);
-            request.Headers.Referrer = new Uri(HttpDefaults.Referer);
+            request.Headers.Referrer = new Uri(_profile.Referer);
 
             using var response = await _client.SendAsync(
                 request,
@@ -81,6 +86,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
                     throw new UpstreamRequestException(HttpFailureCodes.InvalidRedirect);
                 }
 
+                _profile.ValidateRedirect(next, isMedia: false);
                 current = next;
                 // 不复制响应头，也不从 Set-Cookie 提取任何后续请求材料。
                 continue;
@@ -145,7 +151,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
 
             using var request = new HttpRequestMessage(HttpMethod.Get, current);
             request.Headers.UserAgent.ParseAdd(_userAgent);
-            request.Headers.Referrer = new Uri(HttpDefaults.Referer);
+            request.Headers.Referrer = new Uri(_profile.Referer);
             request.Headers.Accept.ParseAdd(HttpDefaults.MediaAccept);
             using var response = await _client.SendAsync(
                 request,
@@ -169,6 +175,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
                     throw new UpstreamRequestException(HttpFailureCodes.InvalidRedirect);
                 }
 
+                _profile.ValidateRedirect(next, isMedia: true);
                 current = next;
                 continue;
             }
@@ -203,7 +210,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
     public Dictionary<string, string> CreateDownloadHeaders() => new(StringComparer.OrdinalIgnoreCase)
     {
         ["User-Agent"] = _userAgent,
-        ["Referer"] = HttpDefaults.Referer,
+        ["Referer"] = _profile.Referer,
         ["Accept"] = HttpDefaults.MediaAccept
     };
 

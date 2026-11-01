@@ -2,7 +2,10 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using MediaLens.Contracts;
 using MediaLens.Http;
+using MediaLens.Platforms.Bilibili;
+using MediaLens.Platforms.Douyin;
 
 [assembly: InternalsVisibleTo("MediaLens.Probe.Tests")]
 
@@ -10,6 +13,7 @@ namespace MediaLens.Probe;
 
 internal static class Program
 {
+    private const string PlatformOption = "--platform";
     private const string InputOption = "--input";
     private const string EntryOption = "--entry";
     private const string DnsOverridesOption = "--dns-overrides";
@@ -21,6 +25,8 @@ internal static class Program
         string? inputPath = null;
         string? dnsOverridesPath = null;
         var entryPoint = ProbeEntryPoints.Share;
+        var platform = DouyinAdapter.PlatformId;
+        var entrySpecified = false;
         for (var index = 0; index < args.Length; index += OptionPairSize)
         {
             if (index + 1 >= args.Length)
@@ -30,11 +36,15 @@ internal static class Program
 
             switch (args[index])
             {
+                case PlatformOption:
+                    platform = args[index + 1];
+                    break;
                 case InputOption:
                     inputPath = args[index + 1];
                     break;
                 case EntryOption:
                     entryPoint = args[index + 1];
+                    entrySpecified = true;
                     break;
                 case DnsOverridesOption:
                     dnsOverridesPath = args[index + 1];
@@ -44,7 +54,14 @@ internal static class Program
             }
         }
 
-        if (inputPath is null || !ProbeEntryPoints.IsKnown(entryPoint))
+        if (platform == BilibiliAdapter.PlatformId && !entrySpecified)
+        {
+            entryPoint = ProbeEntryPoints.Adapter;
+        }
+
+        if (inputPath is null || !ProbeEntryPoints.IsKnown(entryPoint) ||
+            (platform != DouyinAdapter.PlatformId && platform != BilibiliAdapter.PlatformId) ||
+            (platform == BilibiliAdapter.PlatformId && entryPoint != ProbeEntryPoints.Adapter))
         {
             return PrintUsage();
         }
@@ -74,13 +91,21 @@ internal static class Program
             return PrintUsage();
         }
 
+        if (platform == BilibiliAdapter.PlatformId && inputs.Any(input => input.Kind != MediaTypes.Video))
+        {
+            return PrintUsage();
+        }
+
+        var profile = platform == BilibiliAdapter.PlatformId
+            ? PlatformHttpProfile.Bilibili
+            : PlatformHttpProfile.Douyin;
         PublicHttpTargetPolicy targetPolicy;
         try
         {
             var addresses = dnsOverridesPath is null
                 ? null
                 : await LoadDnsOverridesAsync(dnsOverridesPath);
-            targetPolicy = new PublicHttpTargetPolicy(addresses);
+            targetPolicy = new PublicHttpTargetPolicy(addresses, profile);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or
                                          JsonException or ArgumentException or FormatException or UpstreamRequestException)
@@ -88,8 +113,8 @@ internal static class Program
             return PrintUsage();
         }
 
-        using var client = new CookieFreeHttpClient(targetPolicy);
-        var runner = new ProbeRunner(client);
+        using var client = new CookieFreeHttpClient(targetPolicy, profile: profile);
+        var runner = new ProbeRunner(client, platform);
         var results = new List<ProbeReport>();
         foreach (var input in inputs)
         {
@@ -114,7 +139,7 @@ internal static class Program
     {
         Console.Error.WriteLine(
             "Usage: MediaLens.Probe --input <private JSON path> " +
-            "[--entry share|mobile|desktop|detail|legacy|adapter] [--dns-overrides <private JSON path>]");
+            "[--platform douyin|bilibili] [--entry share|mobile|desktop|detail|legacy|adapter] [--dns-overrides <private JSON path>]");
         return ProbeDefaults.InvalidInputExitCode;
     }
 

@@ -1,6 +1,7 @@
 using MediaLens.Contracts;
 using MediaLens.Http;
 using MediaLens.Platforms;
+using MediaLens.Platforms.Bilibili;
 using MediaLens.Platforms.Douyin;
 using MediaLens.Resolution;
 
@@ -20,14 +21,26 @@ public partial class Program
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton(ReadSettings(builder.Configuration));
         builder.Services.AddSingleton<IUpstreamClient>(_ => new CookieFreeHttpClient(new PublicHttpTargetPolicy()));
+        builder.Services.AddKeyedSingleton<IUpstreamClient>(BilibiliAdapter.PlatformId, (_, _) =>
+            new CookieFreeHttpClient(
+                new PublicHttpTargetPolicy(profile: PlatformHttpProfile.Bilibili),
+                profile: PlatformHttpProfile.Bilibili));
+        builder.Services.AddSingleton(provider => new BilibiliAdapter(
+            provider.GetRequiredKeyedService<IUpstreamClient>(BilibiliAdapter.PlatformId),
+            provider.GetRequiredService<TimeProvider>()));
         builder.Services.AddSingleton(provider => new DouyinAdapter(
             provider.GetRequiredService<IUpstreamClient>(),
             provider.GetRequiredService<TimeProvider>()));
         builder.Services.AddSingleton(provider =>
         {
-            var adapter = provider.GetRequiredService<DouyinAdapter>();
-            // 至少一种媒体通过真实匿名验证才启用；逐类型验证状态来自适配器。
-            return new PlatformRegistry([new PlatformRegistration(adapter, adapter.Capabilities.HasSupportedMedia)]);
+            var douyin = provider.GetRequiredService<DouyinAdapter>();
+            var bilibili = provider.GetRequiredService<BilibiliAdapter>();
+            // 两个平台均已取得严格匿名与独立下载证据，发现接口只读取这些注册信息。
+            return new PlatformRegistry(
+            [
+                new PlatformRegistration(douyin, douyin.Capabilities.HasSupportedMedia),
+                new PlatformRegistration(bilibili, bilibili.Capabilities.HasSupportedMedia)
+            ]);
         });
         builder.Services.AddSingleton(provider => new ResolutionService(
             provider.GetRequiredService<PlatformRegistry>(),

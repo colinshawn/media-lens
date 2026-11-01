@@ -6,7 +6,7 @@ English | [简体中文](README.zh-CN.md)
 
 MediaLens is a .NET 10 project for resolving public social-share text into structured media resources: videos, images, and live photos. Callers download the returned resources and save them to local storage or a photo library.
 
-> **Status: Douyin video, image-album, live-photo, and mixed-album resolution verified.** Real public shares passed the Minimal API and independent CDN-download checks on 2026-10-31. All 20 required resources in the final four-sample batch decoded successfully. Douyin is enabled with four `supported` capabilities. See the scoped [validation record](docs/validation/cookie-free-douyin.md).
+> **Status: Douyin media resolution and Bilibili public UGC MP4 resolution are supported.** Both platforms remain strictly cookie-free. See the [Douyin validation](docs/validation/cookie-free-douyin.md) for four media types and the [Bilibili validation](docs/validation/cookie-free-bilibili.md) for BV/AV, short links, selected parts, complete audio/video downloads, and network conditions.
 
 ## Goals
 
@@ -16,7 +16,7 @@ MediaLens is a .NET 10 project for resolving public social-share text into struc
 - Preserve the order of album items and the image/video pairing of each live photo.
 - Provide a small HTTP API with platform-specific parsing kept behind adapters.
 
-The first supported platform is Douyin. Additional platforms require their own adapter and anonymous validation.
+Douyin public shares and Bilibili public UGC videos are supported. Additional platforms require their own adapter and anonymous validation.
 
 ## Cookie-free boundary
 
@@ -43,21 +43,34 @@ Share text
 
 The resolver returns addresses and metadata. Callers own media downloads, local file storage, photo-library permissions, and any native live-photo packaging or import.
 
+## Supported platforms
+
+| Platform | Video | Image albums | Live / mixed albums |
+| --- | --- | --- | --- |
+| Douyin | Supported | Supported | Supported |
+| Bilibili | Complete single-file MP4 for ordinary public UGC | Not implemented | Not implemented |
+
+Bilibili accepts BV/AV video URLs and b23.tv short links. AV input is normalized to the verified BV identity. Each request resolves one part: part 1 by default, or the positive `p` parameter in the shared URL. Invalid or out-of-range values fail explicitly. The JSON body still contains only text; there are no extra part routes or batch semantics.
+
+Bilibili workId identifies the upload's BV, while webUrl preserves the selected p and suggested filenames include the part. Different parts of one upload can share workId; preserve the part when saving or caching resources.
+
+Only complete MP4 files preserving the source audio are returned. DASH tracks, sequential segments, FLV/HLS, previews, bangumi, live streams, interactive videos, and image posts fail explicitly. Anonymous quality depends on the actual upstream response; requesting a qn does not guarantee it. Unknown candidate dimensions remain null. The verified samples returned quality=64; that is not a promise for every work.
+
 ## HTTP API
 
-These routes use ASP.NET Core 10 Minimal API. Only Douyin (`douyin`) is registered and enabled. Additional adapters require their own cookie-free verification.
+These routes use ASP.NET Core 10 Minimal API. Both `douyin` and `bilibili` are registered and enabled, using the same routes, static DTOs, and error contract.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/api/v1/resolve` | Detect the platform from share text and resolve its media. |
-| POST | `/api/v1/platforms/{platform}/resolve` | Resolve with an explicit platform constraint; Douyin uses `/api/v1/platforms/douyin/resolve`. |
+| POST | `/api/v1/platforms/{platform}/resolve` | Resolve with an explicit platform constraint, such as `/api/v1/platforms/douyin/resolve` or `/api/v1/platforms/bilibili/resolve`. |
 | GET | `/api/v1/platforms` | List registered platforms, enablement, and verified media capabilities. |
 
 Both POST routes accept the same `{ "text": "public share text" }` body and return the same media model. An explicit platform is a constraint, not permission to reinterpret a foreign-platform link or switch adapters. Platform discovery reads the in-memory adapter registry without contacting platforms or requiring a database.
 
 The unified route remains stable as platforms are added. Platform identifiers are stable lowercase strings; media types do not become separate `/videos`, `/images`, or `/live-photos` routes. Compatibility is versioned at `/api/v1`; adding a platform alone does not require `/api/v2`.
 
-Discovery distinguishes `unverified`, `supported`, and `unsupported` capabilities. Initially only Douyin is registered; unverified capabilities must not be advertised as supported. This status describes validated implementation coverage, not real-time upstream availability.
+Discovery distinguishes `unverified`, `supported`, and `unsupported` capabilities. Douyin supports all four media categories. Bilibili supports video; its other three categories are `unsupported`. Unverified capabilities must not be advertised as supported. This status describes validated implementation coverage, not real-time upstream availability.
 
 ## Response contract
 
@@ -156,7 +169,7 @@ curl -X POST http://127.0.0.1:8080/api/v1/resolve \
   -d '{"text":"https://www.douyin.com/video/123456"}'
 ```
 
-Discovery reports `douyin`, `enabled: true`, and four `supported` capabilities. Both POST routes return media results for accessible works; replace the synthetic ID above with public share text. Incoming Cookie headers and extra identity fields are rejected. The service has no database, media persistence, browser, or session setup.
+Discovery reports `douyin` and `bilibili`, both with `enabled: true`, and their individual capabilities. Both POST routes return media results for accessible works; replace the synthetic ID above with public share text. Incoming Cookie headers and extra identity fields are rejected. The service has no database, media persistence, browser, or session setup.
 
 ```sh
 dotnet run --project tools/MediaLens.Probe -- \
@@ -164,6 +177,16 @@ dotnet run --project tools/MediaLens.Probe -- \
 ```
 
 The input is an array of `{ "kind": "video", "text": "share text" }`; allowed categories are `video`, `imageAlbum`, `livePhoto`, and `mixedAlbum`. Entry modes are `share`, `mobile`, `desktop`, `detail`, `legacy`, and `adapter`. The last mode invokes the shared production adapter directly. Reports omit share text, URLs, work IDs, raw responses, and cookie values. Keep real samples and local output outside the repository; fixtures contain synthetic data only.
+
+Bilibili uses the same external input format with kind=video. The default platform is douyin. Bilibili defaults to the adapter entry; it can also be explicit:
+
+```sh
+dotnet run --project tools/MediaLens.Probe -- \
+  --platform bilibili --entry adapter \
+  --input /absolute/path/outside-repo/bilibili.private.json
+```
+
+Other diagnostic entries remain Douyin-specific. Reports omit real shares, BV/AID/CID, signed queries, and complete media URLs. The tool validates metadata; complete downloads require a separate client.
 
 Exit code `0` means complete metadata was observed for every input, **not** that caller downloads passed; `1` means at least one observation did not pass, and `2` means invalid input. The [validation record](docs/validation/cookie-free-douyin.md) documents results, DNS mapping constraints, and the scope of the success evidence.
 
@@ -184,11 +207,11 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
   -p 127.0.0.1:8080:8080 media-lens:local
 ```
 
-If your development machine uses TUN Fake-IP DNS, configure real public DNS for platform/CDN hosts. The service rejects synthetic or reserved addresses. Diagnostic DNS mappings used for validation stay outside the repository; see the [network conditions](docs/validation/cookie-free-douyin.md).
+If your development machine uses TUN Fake-IP DNS, platform/CDN hosts must resolve to real public addresses. For Bilibili this includes the relevant bilibili.com, b23.tv, and bilivideo.com hosts. Synthetic, private, and reserved addresses remain rejected. See [Douyin network conditions](docs/validation/cookie-free-douyin.md) and [Bilibili network conditions](docs/validation/cookie-free-bilibili.md). Diagnostic DNS or hosts mappings are not deployment configuration.
 
 The container runs as the base image's non-root user. No browser, database, Redis, media volume, or account configuration is required. Set `MediaLens__ResolutionTimeoutSeconds` to an integer from 1 through 120 to change the total resolution deadline (default 30 seconds). Binding uses the standard ASP.NET Core environment settings, such as `ASPNETCORE_HTTP_PORTS` (8080 in the image).
 
-Image build and container checks passed, including discovery, both POST routes, Cookie rejection, and a read-only root filesystem without persistent writes. Real media checks and deployment checks are recorded separately. See the [container validation](docs/validation/container-validation.json).
+Image build and container checks passed, including discovery, both POST routes, Cookie rejection, and a read-only root filesystem without persistent writes. Real media checks and deployment checks are recorded separately. See the [Douyin container validation](docs/validation/container-validation.json) and [Bilibili API/container evidence](docs/validation/2026-10-31-bilibili-success.json).
 
 ## Initial milestones
 

@@ -22,6 +22,8 @@ public static class HttpDefaults
 
 public static class HttpFailureCodes
 {
+    public const string PlatformMismatch = "platformMismatch";
+    public const string UnsupportedResource = "unsupportedResource";
     public const string TargetRejected = "targetRejected";
     public const string RedirectLimit = "redirectLimit";
     public const string RedirectLoop = "redirectLoop";

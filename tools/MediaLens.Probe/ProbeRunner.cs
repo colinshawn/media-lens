@@ -2,14 +2,17 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text.RegularExpressions;
 using MediaLens.Http;
+using MediaLens.Platforms;
+using MediaLens.Platforms.Bilibili;
 using MediaLens.Platforms.Douyin;
 using MediaLens.Probe.Links;
 using MediaLens.Probe.Metadata;
 using MediaLens.Resolution;
+using MediaLens.Shares;
 
 namespace MediaLens.Probe;
 
-internal sealed class ProbeRunner(CookieFreeHttpClient client)
+internal sealed class ProbeRunner(CookieFreeHttpClient client, string platform = DouyinAdapter.PlatformId)
 {
     public async Task<ProbeReport> RunAsync(
         ProbeInput input,
@@ -87,8 +90,15 @@ internal sealed class ProbeRunner(CookieFreeHttpClient client)
         var metadata = MetadataSummary.Empty(ProbeEntryPoints.Adapter);
         try
         {
-            var uri = ShareLinks.Extract(input.Text);
-            var work = await new DouyinAdapter(observed, TimeProvider.System).ResolveAsync(uri, cancellationToken);
+            using var bilibili = platform == BilibiliAdapter.PlatformId
+                ? new BilibiliAdapter(observed, TimeProvider.System)
+                : null;
+            IPlatformAdapter adapter = bilibili is not null
+                ? bilibili
+                : new DouyinAdapter(observed, TimeProvider.System);
+            var uri = ShareUrlExtractor.Extract(input.Text).FirstOrDefault(adapter.CanHandle)
+                ?? throw new ResolutionException(ErrorCodes.PlatformMismatch, "分享链接与探测平台不一致。", (int)HttpStatusCode.BadRequest);
+            var work = await adapter.ResolveAsync(uri, cancellationToken);
             metadata = new MetadataSummary(
                 PayloadKind: ProbeEntryPoints.Adapter,
                 WorkMatched: true,

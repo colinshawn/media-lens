@@ -25,7 +25,13 @@ public sealed class ApiTests
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var platform = Assert.Single(json.RootElement.GetProperty("platforms").EnumerateArray());
+        var entries = json.RootElement.GetProperty("platforms");
+        Assert.Equal(2, entries.GetArrayLength());
+        var bilibili = Assert.Single(entries.EnumerateArray(), entry => entry.GetProperty("id").GetString() == "bilibili");
+        Assert.True(bilibili.GetProperty("enabled").GetBoolean());
+        Assert.Equal("supported", bilibili.GetProperty("capabilities").GetProperty("video").GetString());
+        Assert.Equal("unsupported", bilibili.GetProperty("capabilities").GetProperty("imageAlbum").GetString());
+        var platform = Assert.Single(entries.EnumerateArray(), entry => entry.GetProperty("id").GetString() == "douyin");
         Assert.Equal("douyin", platform.GetProperty("id").GetString());
         Assert.True(platform.GetProperty("enabled").GetBoolean());
         Assert.All(platform.GetProperty("capabilities").EnumerateObject(), field =>

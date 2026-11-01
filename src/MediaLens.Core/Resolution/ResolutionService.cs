@@ -45,6 +45,16 @@ public sealed class ResolutionService(
         {
             throw ResolutionErrors.UpstreamUnavailable();
         }
+        catch (UpstreamRequestException exception) when (exception.Outcome == HttpFailureCodes.PlatformMismatch)
+        {
+            throw new ResolutionException(
+                ErrorCodes.PlatformMismatch, "跳转后的链接与指定平台不一致。", (int)HttpStatusCode.BadRequest);
+        }
+        catch (UpstreamRequestException exception) when (exception.Outcome == HttpFailureCodes.UnsupportedResource)
+        {
+            throw new ResolutionException(
+                ErrorCodes.UnsupportedResource, "当前不支持该资源类型。", (int)HttpStatusCode.UnprocessableEntity);
+        }
         catch (UpstreamRequestException)
         {
             throw ResolutionErrors.UpstreamChanged();
