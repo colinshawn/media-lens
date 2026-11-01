@@ -66,6 +66,8 @@ Bilibili 的 workId 标识整稿 BV，所选 P 由 webUrl 的 p 区分，文件�
 | POST | `/api/v1/platforms/{platform}/resolve` | 指定平台解析，例如 `/api/v1/platforms/douyin/resolve` 或 `/api/v1/platforms/bilibili/resolve`。 |
 | GET | `/api/v1/platforms` | 查询已注册平台、启用状态和经验证的媒体能力。 |
 
+三个端点均要求单个 `Authorization: Bearer <token>` 请求头，平台发现也不例外。凭证仅从该请求头读取。密钥配置与部署方式见[接口访问与运行配置](#接口访问与运行配置)。
+
 两个 POST 接口共用 `{ "text": "公开分享文本" }` 请求体及媒体结果模型。显式平台仅增加平台约束，链接归属不匹配时明确失败，不切换到其他适配器。平台发现接口读取内存中的适配器注册表，不请求上游平台、不依赖数据库。
 
 增加平台时保持统一入口不变。平台标识使用稳定的小写字符串；视频、图片、实况通过结果类型表达，不分别建立 `/videos`、`/images`、`/live-photos` 路由。兼容版本统一位于 `/api/v1`，单纯增加平台不升级为 `/api/v2`。
@@ -126,7 +128,7 @@ Bilibili 的 workId 标识整稿 BV，所选 P 由 webUrl 的 p 区分，文件�
 
 CDN 地址可能失效。下载因地址过期失败时，应重新解析原分享文本，保留 URL 的全部查询参数，并使用该候选自己的请求头。未知过期时间为 `null`，不代表永久有效。
 
-错误通过稳定的 `code` 判断：`INVALID_INPUT`、`PLATFORM_MISMATCH` 使用 400；`PLATFORM_NOT_FOUND`、有明确证据的 `CONTENT_UNAVAILABLE` 使用 404；平台关闭、匿名不可用、媒体缺失和资源不支持使用 422。`UPSTREAM_CHANGED` 为 502，暂时故障 `UPSTREAM_UNAVAILABLE` 为 503，`RESOLUTION_TIMEOUT` 为 504。框架错误使用相同结构；仅暂时故障提示可重试，不会因身份或输入问题建立会话回退。
+错误通过稳定的 `code` 判断：`UNAUTHORIZED` 使用 401，并返回 `WWW-Authenticate: Bearer`；`INVALID_INPUT`、`PLATFORM_MISMATCH` 使用 400；`PLATFORM_NOT_FOUND`、有明确证据的 `CONTENT_UNAVAILABLE` 使用 404；平台关闭、匿名不可用、媒体缺失和资源不支持使用 422。`UPSTREAM_CHANGED` 为 502，暂时故障 `UPSTREAM_UNAVAILABLE` 为 503，`RESOLUTION_TIMEOUT` 为 504。框架错误使用相同结构；仅暂时故障提示可重试，不会因身份或输入问题建立会话回退。
 
 ## 技术选型
 
@@ -205,6 +207,8 @@ Dockerfile 使用 Linux 多阶段构建：
 
 ```sh
 docker build -t media-lens:local .
+# 首次本地运行时生成密钥；后续启动应复用已配置的密钥。
+export SECRET_TOKEN="$(openssl rand -hex 32)"
 docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
   -e SECRET_TOKEN -p 127.0.0.1:8080:8080 media-lens:local
 ```
@@ -217,18 +221,18 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
 
 **部署兼容性变更：**三个 API 均要求 `Authorization: Bearer <token>`，平台发现和探测请求也需要携带凭证。最终生效的密钥缺失或非法时，程序在监听前以非零状态退出，不提供默认密钥、自动生成或匿名回退。升级现有容器时必须同步注入密钥并更新调用方。
 
-| 环境变量 | 用途 | 校验与默认值 | 原生兼容入口 |
+| 环境变量 | 用途 | 校验与默认值 | 其他配置入口 |
 | --- | --- | --- | --- |
 | `SECRET_TOKEN` | 本服务共享访问凭证 | 必填；32～256 个符合 Bearer 字符语法的 ASCII 字符，包含边界 | `MediaLens__Auth__SecretToken` / `MediaLens:Auth:SecretToken` |
 | `HTTP_PORT` | 容器内 HTTP 监听端口 | 单个十进制整数，1～65535；镜像默认 8080 | 显式 URL / Kestrel 端点 |
 
-Dockerfile 直接设置 `ENV HTTP_PORT=8080`，启动容器时覆盖 `HTTP_PORT` 即可修改端口，并需注入必填的 `SECRET_TOKEN`。端口环境变量统一使用 `HTTP_PORT`，程序不再为其他端口环境变量提供兼容别名。开发用 `launchSettings.json` 已排除出构建上下文。
+`SECRET_TOKEN` 与 `HTTP_PORT` 是 MediaLens 的配置约定，由应用读取并映射，Docker 负责将变量传入容器。Dockerfile 直接设置 `ENV HTTP_PORT=8080`，启动容器时覆盖 `HTTP_PORT` 即可修改端口，并需注入必填的 `SECRET_TOKEN`。端口环境变量统一使用 `HTTP_PORT`，程序不再为其他端口环境变量提供兼容别名。开发用 `launchSettings.json` 已排除出构建上下文。
 
 长度按 token 本体计数，不包含 `Bearer ` 前缀，也不按 Base64 解码后的字节数计算。非 ASCII、空白、非法填充及长度越界均被拒绝，不裁剪或截断。建议使用 32 个安全随机字节生成密钥，例如 64 字符十六进制或 43 字符无填充 Base64URL；长度合规不等于随机强度合格。密钥仅用于 API 入站校验，不传入平台请求、响应下载头或日志。进入鉴权层的无效凭证返回 `401 / UNAUTHORIZED`、`WWW-Authenticate: Bearer` 和既有 `requestId + error` JSON；非法格式在计算摘要与正文绑定前拒绝。
 
 针对同一个内部配置键，优先级为：命令行 > 对外环境变量 > 配置文件 > 默认值。密钥仍支持 .NET 原生环境变量，优先级位于对外变量与配置文件之间。已选中的非法值直接失败，不回退。`HTTP_PORT` 在内部映射为框架的 `HTTP_PORTS` 配置键；`--urls`、`ASPNETCORE_URLS` 和显式 Kestrel 端点继续按框架规则优先于端口模式。单端口校验只在 `HTTP_PORT` 提供最终端口配置时生效。非容器运行且完全没有监听配置时保留框架默认值；Dockerfile 设置 `HTTP_PORT=8080`。
 
-上方 Docker 命令从当前 shell 环境读取 `SECRET_TOKEN`。也可将 [`.env.example`](.env.example) 复制为已忽略的 `.env`，在本地填入空的密钥占位，再用 `--env-file .env` 替换 `-e SECRET_TOKEN`。真实密钥不得提交到仓库。Compose 可显式把 shell/`.env` 的插值结果传入容器：
+上方 Docker 命令从当前 shell 环境读取 `SECRET_TOKEN`。也可将 [`.env.example`](.env.example) 复制为已忽略的 `.env`，在本地将空的 `SECRET_TOKEN=` 占位替换为生成的密钥，再用 `--env-file .env` 替换 `-e SECRET_TOKEN`。真实密钥不得提交到仓库。`docker run` 和 `dotnet run` 不会自动加载 `.env`；Compose 默认用 `.env` 进行变量插值，仍需像下例一样通过 `environment` 或使用 `env_file` 将值传入容器：
 
 ```yaml
 services:

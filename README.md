@@ -66,6 +66,8 @@ These routes use ASP.NET Core 10 Minimal API. Both `douyin` and `bilibili` are r
 | POST | `/api/v1/platforms/{platform}/resolve` | Resolve with an explicit platform constraint, such as `/api/v1/platforms/douyin/resolve` or `/api/v1/platforms/bilibili/resolve`. |
 | GET | `/api/v1/platforms` | List registered platforms, enablement, and verified media capabilities. |
 
+All three routes require a single `Authorization: Bearer <token>` header, including platform discovery. Credentials are accepted only in this header. See [API access and runtime configuration](#api-access-and-runtime-configuration) for secret setup and deployment.
+
 Both POST routes accept the same `{ "text": "public share text" }` body and return the same media model. An explicit platform is a constraint, not permission to reinterpret a foreign-platform link or switch adapters. Platform discovery reads the in-memory adapter registry without contacting platforms or requiring a database.
 
 The unified route remains stable as platforms are added. Platform identifiers are stable lowercase strings; media types do not become separate `/videos`, `/images`, or `/live-photos` routes. Compatibility is versioned at `/api/v1`; adding a platform alone does not require `/api/v2`.
@@ -126,7 +128,7 @@ Download using both the candidate's `url` and `headers`. Opening only the URL in
 
 CDN addresses may expire. Re-resolve the original share if a download fails because an address has expired, preserve every query parameter, and use each candidate's own headers. Unknown expiry stays `null`; it is not a guarantee of permanent access.
 
-Errors have stable `code` values: `INVALID_INPUT` and `PLATFORM_MISMATCH` use 400; `PLATFORM_NOT_FOUND` and confirmed `CONTENT_UNAVAILABLE` use 404; disabled platforms, anonymous unavailability, incomplete media, and unsupported resources use 422. `UPSTREAM_CHANGED` uses 502, temporary `UPSTREAM_UNAVAILABLE` uses 503, and `RESOLUTION_TIMEOUT` uses 504. Framework errors use the same response shape. Temporary failures may be retried; identity or input failures do not trigger a session fallback.
+Errors have stable `code` values: `UNAUTHORIZED` uses 401 with `WWW-Authenticate: Bearer`; `INVALID_INPUT` and `PLATFORM_MISMATCH` use 400; `PLATFORM_NOT_FOUND` and confirmed `CONTENT_UNAVAILABLE` use 404; disabled platforms, anonymous unavailability, incomplete media, and unsupported resources use 422. `UPSTREAM_CHANGED` uses 502, temporary `UPSTREAM_UNAVAILABLE` uses 503, and `RESOLUTION_TIMEOUT` uses 504. Framework errors use the same response shape. Temporary failures may be retried; identity or input failures do not trigger a session fallback.
 
 ## Technology
 
@@ -205,6 +207,8 @@ Use environment-based application configuration and container-standard logging. 
 
 ```sh
 docker build -t media-lens:local .
+# For a first local run, generate a secret; reuse your configured secret on later starts.
+export SECRET_TOKEN="$(openssl rand -hex 32)"
 docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
   -e SECRET_TOKEN -p 127.0.0.1:8080:8080 media-lens:local
 ```
@@ -217,18 +221,18 @@ The container runs as the base image's non-root user. No browser, database, Redi
 
 **Breaking deployment change:** all three API endpoints, including platform discovery and monitoring requests, require `Authorization: Bearer <token>`. Startup fails with a nonzero exit code before listening if the effective secret is missing or invalid. There is no default secret, automatic generation, or anonymous fallback. Update callers and inject a secret when upgrading an existing container.
 
-| Variable | Meaning | Validation/default | Native compatibility |
+| Variable | Meaning | Validation/default | Other configuration entry points |
 | --- | --- | --- | --- |
 | `SECRET_TOKEN` | Shared API credential | Required; 32–256 ASCII characters, inclusive, using Bearer token syntax | `MediaLens__Auth__SecretToken` / `MediaLens:Auth:SecretToken` |
 | `HTTP_PORT` | Container-internal HTTP port | One decimal integer, 1–65535; image default 8080 | Explicit URLs / Kestrel endpoints |
 
-The Dockerfile sets `ENV HTTP_PORT=8080`. Override `HTTP_PORT` at container startup to change the port, and inject the required `SECRET_TOKEN` at runtime. `HTTP_PORT` is the project's single port environment variable; the application does not add compatibility aliases for other port environment variables. Development `launchSettings.json` profiles are excluded from the build context.
+`SECRET_TOKEN` and `HTTP_PORT` are MediaLens conventions read and mapped by the application; Docker passes them into the container. The Dockerfile sets `ENV HTTP_PORT=8080`. Override `HTTP_PORT` at container startup to change the port, and inject the required `SECRET_TOKEN` at runtime. `HTTP_PORT` is the project's single port environment variable; the application does not add compatibility aliases for other port environment variables. Development `launchSettings.json` profiles are excluded from the build context.
 
 Length counts the token text itself, without the `Bearer ` prefix or Base64 decoding. Non-ASCII, whitespace, malformed padding, and out-of-range values are rejected without trimming or truncation. Use a cryptographically random secret, such as 32 random bytes encoded as 64 hexadecimal characters or 43 unpadded Base64URL characters; length alone does not guarantee randomness. Secrets remain in the API layer and never enter upstream requests, response download headers, or logs. Invalid credentials reaching authentication return `401 / UNAUTHORIZED`, `WWW-Authenticate: Bearer`, and the existing `requestId + error` JSON before body binding or digest calculation for malformed values.
 
 For the same configuration key, precedence is command line > public environment variable > configuration file > default. The secret's native .NET environment variable remains supported between the public variable and configuration-file layers. An invalid selected value fails instead of falling back. `HTTP_PORT` maps internally to the framework's `HTTP_PORTS` key; `--urls`, `ASPNETCORE_URLS`, and explicit Kestrel endpoints retain their higher-priority URL/endpoint behavior. The single-port validation applies when `HTTP_PORT` supplies the effective port setting. Standalone execution without listening settings retains the framework default; the Dockerfile supplies `HTTP_PORT=8080`.
 
-The command above reads `SECRET_TOKEN` from the shell environment. Alternatively, copy [`.env.example`](.env.example) to an ignored `.env`, set the empty secret placeholder locally, and replace `-e SECRET_TOKEN` with `--env-file .env`. Do not commit real credentials. Compose can explicitly pass its shell/`.env` interpolation values into the container:
+The command above reads `SECRET_TOKEN` from the shell environment. Alternatively, copy [`.env.example`](.env.example) to an ignored `.env`, replace the empty `SECRET_TOKEN=` placeholder with a generated secret locally, and replace `-e SECRET_TOKEN` with `--env-file .env`. Do not commit real credentials. Neither `docker run` nor `dotnet run` automatically loads `.env`. Compose uses `.env` for interpolation; pass values into the container through `environment` as below or through `env_file`:
 
 ```yaml
 services:

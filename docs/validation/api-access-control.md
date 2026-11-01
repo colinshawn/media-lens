@@ -2,6 +2,8 @@
 
 验证日期：2026-11-01（Asia/Shanghai）。变更：`add-api-access-control`，分支：`features/api-access-control`。
 
+归档提案：[API 访问控制与运行配置](../../openspec/changes/archive/2026-11-01-add-api-access-control/proposal.md)。
+
 ## 结果
 
 | 检查 | 结果 |
@@ -73,7 +75,7 @@ dotnet test MediaLens.slnx --no-build
 dotnet format MediaLens.slnx --no-restore --verify-no-changes
 docker build -t media-lens:local .
 python3 tools/validate-api-access-control.py
-openspec validate add-api-access-control --strict --no-interactive
+openspec validate --all --strict --no-interactive
 ```
 
 完整 Linux SDK 回归（先完成本机构建）：

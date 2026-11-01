@@ -2,7 +2,7 @@ schema: spec-driven
 
 context: |
   项目：MediaLens。将公开社交分享文本解析为结构化媒体资源，供调用方自行下载和保存。
-  当前阶段：已交付抖音四类媒体及 Bilibili 普通 UGC 完整 MP4 的严格无 Cookie 分享解析。已有 Minimal API、共享解析库、验证工具、测试、Linux 容器和中英文使用文档。
+  当前阶段：已交付抖音四类媒体及 Bilibili 普通 UGC 完整 MP4 的严格无 Cookie 分享解析，以及统一的 API Bearer 访问控制和启动配置校验。已有 Minimal API、共享解析库、验证工具、测试、Linux 容器和中英文使用文档。
 
   技术与部署：
   - 使用 C#、.NET 10，目标框架为 net10.0，API 宿主采用 ASP.NET Core 10 Minimal API。
@@ -29,6 +29,12 @@ context: |
   - 每个候选独立包含 url、完整 headers 及可空 mimeType、fileName、width、height、durationMs、sizeBytes、expiresAt；不使用顶层下载头继承。
   - 字段名 camelCase，UTC 时间使用 ISO 8601；固定字段全部输出，未知值显式 null，数组/字典不得为 null。
   - 错误为 requestId 与 error 对象，error 包含 code、message、retryable、可空 retryAfterSeconds；框架绑定错误与异常也保持此形状。
+
+  访问控制与运行配置：
+  - 三个 API 端点统一要求单个合法的 Authorization: Bearer 请求头；鉴权失败返回 401、UNAUTHORIZED 和 Bearer challenge。
+  - SECRET_TOKEN 为必填配置，token 本体限制为 32～256 个 ASCII 字符，并符合 Bearer 凭证语法；无有效密钥时在监听前以安全错误退出，退出码为 1。
+  - 对外端口环境变量统一使用 HTTP_PORT；Dockerfile 默认设置 HTTP_PORT=8080，宿主机端口发布独立配置，保留框架 URL 和显式端点配置方式。
+  - 服务凭证仅用于入站 API 鉴权，不进入日志或响应，不转发上游，也不用于构造上游身份或 Cookie。
 
   严格无 Cookie：
   - 不接收、生成、存储或发送 Cookie；不转发入站 Cookie，也不复用上游 Set-Cookie。
