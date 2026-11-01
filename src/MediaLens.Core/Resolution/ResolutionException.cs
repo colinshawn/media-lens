@@ -19,6 +19,7 @@ public sealed class ResolutionException(
 public static class ErrorCodes
 {
     public const string InvalidInput = "INVALID_INPUT";
+    public const string Unauthorized = "UNAUTHORIZED";
     public const string PlatformMismatch = "PLATFORM_MISMATCH";
     public const string PlatformNotFound = "PLATFORM_NOT_FOUND";
     public const string PlatformNotSupported = "PLATFORM_NOT_SUPPORTED";

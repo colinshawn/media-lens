@@ -2,19 +2,19 @@
 
 ### Requirement: 提供统一的对外环境变量名称
 
-系统 SHALL 显式支持大写、单下划线的 `SECRET_TOKEN` 与 `HTTP_PORT` 环境变量，分别映射至 `MediaLens:Auth:SecretToken` 与框架 `HTTP_PORTS` 配置键。系统 MUST 保留 .NET 层次环境变量 `MediaLens__Auth__SecretToken` 和原生监听配置的兼容入口；文档 MUST 说明这些简写名称为 MediaLens 的约定，需要程序映射，不是 Docker 自动解释的配置。
+系统 SHALL 显式支持大写、单下划线的 `SECRET_TOKEN` 与 `HTTP_PORT` 环境变量，分别映射至 `MediaLens:Auth:SecretToken` 与框架 `HTTP_PORTS` 配置键。系统 MUST 保留 .NET 层次环境变量 `MediaLens__Auth__SecretToken` 作为密钥兼容入口；端口环境变量 MUST 统一使用 HTTP_PORT，应用不增加其他端口环境变量的兼容读取。文档 MUST 说明这些名称为 MediaLens 的约定，需要程序映射，不是 Docker 自动解释的配置。
 
 #### Scenario: 仅使用对外名称启动
 - **WHEN** 运行环境提供合法的 SECRET_TOKEN 和 HTTP_PORT，没有提供同项命令行覆盖
 - **THEN** 程序使用该密钥保护 API，并通过 HTTP_PORTS 监听所选容器内端口
 
-#### Scenario: 使用 .NET 原生兼容入口
-- **WHEN** 未设置简写变量，通过 MediaLens__Auth__SecretToken 提供有效密钥并使用原生监听配置
-- **THEN** 程序仍可启动并正确鉴权，不要求同时重复提供简写变量
+#### Scenario: 使用密钥的 .NET 兼容入口
+- **WHEN** 未设置 SECRET_TOKEN，通过 MediaLens__Auth__SecretToken 提供有效密钥并通过 HTTP_PORT 配置端口
+- **THEN** 程序仍可启动并正确鉴权，不要求重复提供 SECRET_TOKEN
 
 ### Requirement: 相同配置键具有确定的来源优先级
 
-针对同一个内部配置键，系统 MUST 按命令行、对外环境变量别名、.NET 原生环境变量、配置文件、既有默认值的顺序选取配置。未设置的别名 SHALL 不覆盖其他来源；最终选中的空值或非法值 MUST 明确失败，不静默回退至较低来源。别名映射 MUST 不覆盖命令行中已明确配置的同一内部键。
+针对同一个内部配置键，系统 MUST 按命令行、对外环境变量、配置文件、既有默认值的顺序选取配置；密钥的 .NET 兼容环境变量 SHALL 位于对外变量与配置文件之间。未设置的变量 SHALL 不覆盖其他来源；最终选中的空值或非法值 MUST 明确失败，不静默回退至较低来源。变量映射 MUST 不覆盖命令行中已明确配置的同一内部键。
 
 #### Scenario: 别名与原生密钥环境变量冲突
 - **WHEN** SECRET_TOKEN 与 MediaLens__Auth__SecretToken 同时存在且为不同合法值，没有更高优先级配置
@@ -29,7 +29,7 @@
 - **THEN** 程序在启动时失败，不将已设置的空值等同于变量不存在并回退
 
 #### Scenario: 端口别名覆盖镜像默认环境
-- **WHEN** 镜像继承 ASPNETCORE_HTTP_PORTS=8080，运行时设置 HTTP_PORT=9000，且没有更高优先级监听配置
+- **WHEN** 镜像设置 HTTP_PORT=8080，运行时覆盖为 HTTP_PORT=9000，且没有更高优先级监听配置
 - **THEN** 程序监听容器端口 9000，镜像内置值不能遮蔽别名
 
 ### Requirement: 无有效密钥时在监听之前失败
@@ -62,7 +62,7 @@
 
 ### Requirement: 端口别名只表达单个有效 HTTP 端口
 
-被选中的 HTTP_PORT 别名 MUST 是 `1` 至 `65535` 的单个十进制整数，不接受零、负数、小数、空字符串、空格、URL 或多端口列表；非法值 MUST 在监听前导致非零退出，不回退至 8080。未设置别名时 SHALL 保留原生监听配置；Docker 镜像 MUST 继续以 ASPNETCORE_HTTP_PORTS=8080 提供默认容器端口。
+被选中的 HTTP_PORT MUST 是 `1` 至 `65535` 的单个十进制整数，不接受零、负数、小数、空字符串、空格、URL 或多端口列表；非法值 MUST 在监听前导致非零退出，不回退至 8080。Docker 镜像 MUST 直接设置 HTTP_PORT=8080 提供默认容器端口；非 Docker 运行且没有任何监听配置时 SHALL 保留框架默认行为。
 
 #### Scenario: 自定义容器内端口
 - **WHEN** 提供有效密钥和 HTTP_PORT=9000，且没有更高优先级监听配置
@@ -78,7 +78,7 @@
 
 ### Requirement: 保留框架 URL 与显式端点优先级
 
-系统 SHALL 将 HTTP_PORT 映射为 HTTP_PORTS，MUST 不无条件改写 ASPNETCORE_URLS、命令行 --urls 或显式 Kestrel 端点。跨配置键的监听优先级 MUST 保留框架规则，URL 或显式端点配置可以优先于端口模式。原生端口列表 SHALL 继续使用框架语义，不受单端口别名语法限制。
+系统 SHALL 将 HTTP_PORT 映射为框架 HTTP_PORTS 配置键，MUST 不无条件改写 ASPNETCORE_URLS、命令行 --urls 或显式 Kestrel 端点。跨配置键的监听优先级 MUST 保留框架规则，URL 或显式端点配置可以优先于端口模式。系统 MUST 不为其他端口环境变量或多端口环境列表新增兼容读取。
 
 #### Scenario: 命令行 URL 覆盖端口模式
 - **WHEN** 提供有效密钥、合法 HTTP_PORT 和显式 --urls 监听地址
@@ -88,9 +88,9 @@
 - **WHEN** 提供有效密钥、ASPNETCORE_URLS 和合法 HTTP_PORT，且没有更高优先级端点配置
 - **THEN** 框架 URL 配置优先于端口列表，文档说明该优先级而不宣称别名覆盖全部监听方式
 
-#### Scenario: 原生端口列表
-- **WHEN** 未设置 HTTP_PORT，通过 ASPNETCORE_HTTP_PORTS 提供多个合法端口
-- **THEN** 原生列表按框架规则生效，不被别名的单端口规则误判为非法
+#### Scenario: HTTP_PORT 覆盖配置文件端口
+- **WHEN** 环境提供合法 HTTP_PORT，而配置文件中 HTTP_PORTS 为不同或非法值，没有更高优先级监听配置
+- **THEN** 以 HTTP_PORT 指定端口启动，不被较低优先级的配置文件值遮蔽
 
 ### Requirement: Docker 监听与宿主机发布保持独立
 

@@ -7,7 +7,7 @@ internal static class MediaResolutionEndpoints
 {
     public static void MapMediaResolutionApi(this IEndpointRouteBuilder endpoints)
     {
-        var api = endpoints.MapGroup(ApiDefaults.ApiPrefix);
+        var api = endpoints.MapGroup(ApiDefaults.ApiPrefix).WithMetadata(new ApiTokenRequired());
         api.MapPost("/resolve", async (
             ResolveRequest request,
             ResolutionService service,

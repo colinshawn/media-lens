@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../MediaLens.Core/MediaLens.Core.csproj" />
+    <InternalsVisibleTo Include="MediaLens.Tests" />
   </ItemGroup>
 </Project>

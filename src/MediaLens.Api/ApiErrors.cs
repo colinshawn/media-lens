@@ -61,6 +61,8 @@ internal static class ApiErrors
                 MapStatus(status.HttpContext.Response.StatusCode)));
     }
 
+    internal static Task WriteAsync(HttpContext context, int status) => WriteAsync(context, status, MapStatus(status));
+
     private static Task WriteAsync(HttpContext context, int status, ApiError error)
     {
         if (context.Response.HasStarted || context.RequestAborted.IsCancellationRequested)
@@ -83,6 +85,7 @@ internal static class ApiErrors
 
     private static ApiError MapStatus(int status) => status switch
     {
+        StatusCodes.Status401Unauthorized => new ApiError(ErrorCodes.Unauthorized, "访问凭证缺失或无效。", false, null),
         StatusCodes.Status404NotFound => new ApiError(ErrorCodes.EndpointNotFound, "接口路径不存在。", false, null),
         StatusCodes.Status405MethodNotAllowed => new ApiError(ErrorCodes.MethodNotAllowed, "该接口不支持此 HTTP 方法。", false, null),
         StatusCodes.Status415UnsupportedMediaType => new ApiError(ErrorCodes.UnsupportedMediaType, "请使用 application/json 请求正文。", false, null),

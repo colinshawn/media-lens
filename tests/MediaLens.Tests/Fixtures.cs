@@ -7,6 +7,7 @@ using MediaLens.Platforms;
 using MediaLens.Resolution;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,10 @@ namespace MediaLens.Tests;
 internal sealed class ApiFactory(PlatformRegistry? registry = null, TimeSpan? timeout = null)
     : WebApplicationFactory<Program>
 {
+    public const string DefaultSecret = "synthetic-api-test-token-only-1234567890";
+
+    public string Secret { get; init; } = DefaultSecret;
+
     public IUpstreamClient? Upstream { get; init; }
 
     public CaptureLogs? Logs { get; init; }
@@ -23,12 +28,18 @@ internal sealed class ApiFactory(PlatformRegistry? registry = null, TimeSpan? ti
     public ApiFactory WithRealTcp()
     {
         const int ephemeralPort = 0;
-        UseKestrel(ephemeralPort);
+        // 在启动前通过选项绑定动态端口，避免启动后再修改地址集合的时序竞争。
+        UseKestrel(options => options.Listen(IPAddress.Loopback, ephemeralPort));
         return this;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((_, configuration) =>
+            configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [SecretToken.ConfigurationKey] = Secret
+            }));
         if (Logs is { } logs)
         {
             builder.ConfigureLogging(logging => logging.AddProvider(logs));
@@ -55,6 +66,12 @@ internal sealed class ApiFactory(PlatformRegistry? registry = null, TimeSpan? ti
                 services.AddSingleton(new ResolutionSettings(value));
             }
         });
+    }
+
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(SecretToken.Scheme, Secret);
     }
 }
 

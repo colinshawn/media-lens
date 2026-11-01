@@ -162,9 +162,11 @@ dotnet format MediaLens.slnx --no-restore --verify-no-changes
 Run the API locally:
 
 ```sh
+export SECRET_TOKEN="$(openssl rand -hex 32)"
 dotnet run --project src/MediaLens.Api -- --urls http://127.0.0.1:8080
-curl http://127.0.0.1:8080/api/v1/platforms
+curl -H "Authorization: Bearer ${SECRET_TOKEN}" http://127.0.0.1:8080/api/v1/platforms
 curl -X POST http://127.0.0.1:8080/api/v1/resolve \
+  -H "Authorization: Bearer ${SECRET_TOKEN}" \
   -H 'Content-Type: application/json' \
   -d '{"text":"https://www.douyin.com/video/123456"}'
 ```
@@ -204,12 +206,47 @@ Use environment-based application configuration and container-standard logging. 
 ```sh
 docker build -t media-lens:local .
 docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
-  -p 127.0.0.1:8080:8080 media-lens:local
+  -e SECRET_TOKEN -p 127.0.0.1:8080:8080 media-lens:local
 ```
 
 If your development machine uses TUN Fake-IP DNS, platform/CDN hosts must resolve to real public addresses. For Bilibili this includes the relevant bilibili.com, b23.tv, and bilivideo.com hosts. Synthetic, private, and reserved addresses remain rejected. See [Douyin network conditions](docs/validation/cookie-free-douyin.md) and [Bilibili network conditions](docs/validation/cookie-free-bilibili.md). Diagnostic DNS or hosts mappings are not deployment configuration.
 
-The container runs as the base image's non-root user. No browser, database, Redis, media volume, or account configuration is required. Set `MediaLens__ResolutionTimeoutSeconds` to an integer from 1 through 120 to change the total resolution deadline (default 30 seconds). Binding uses the standard ASP.NET Core environment settings, such as `ASPNETCORE_HTTP_PORTS` (8080 in the image).
+The container runs as the base image's non-root user. No browser, database, Redis, media volume, or upstream account configuration is required. Set `MediaLens__ResolutionTimeoutSeconds` to an integer from 1 through 120 to change the total resolution deadline (default 30 seconds).
+
+### API access and runtime configuration
+
+**Breaking deployment change:** all three API endpoints, including platform discovery and monitoring requests, require `Authorization: Bearer <token>`. Startup fails with a nonzero exit code before listening if the effective secret is missing or invalid. There is no default secret, automatic generation, or anonymous fallback. Update callers and inject a secret when upgrading an existing container.
+
+| Variable | Meaning | Validation/default | Native compatibility |
+| --- | --- | --- | --- |
+| `SECRET_TOKEN` | Shared API credential | Required; 32–256 ASCII characters, inclusive, using Bearer token syntax | `MediaLens__Auth__SecretToken` / `MediaLens:Auth:SecretToken` |
+| `HTTP_PORT` | Container-internal HTTP port | One decimal integer, 1–65535; image default 8080 | Explicit URLs / Kestrel endpoints |
+
+The Dockerfile sets `ENV HTTP_PORT=8080`. Override `HTTP_PORT` at container startup to change the port, and inject the required `SECRET_TOKEN` at runtime. `HTTP_PORT` is the project's single port environment variable; the application does not add compatibility aliases for other port environment variables. Development `launchSettings.json` profiles are excluded from the build context.
+
+Length counts the token text itself, without the `Bearer ` prefix or Base64 decoding. Non-ASCII, whitespace, malformed padding, and out-of-range values are rejected without trimming or truncation. Use a cryptographically random secret, such as 32 random bytes encoded as 64 hexadecimal characters or 43 unpadded Base64URL characters; length alone does not guarantee randomness. Secrets remain in the API layer and never enter upstream requests, response download headers, or logs. Invalid credentials reaching authentication return `401 / UNAUTHORIZED`, `WWW-Authenticate: Bearer`, and the existing `requestId + error` JSON before body binding or digest calculation for malformed values.
+
+For the same configuration key, precedence is command line > public environment variable > configuration file > default. The secret's native .NET environment variable remains supported between the public variable and configuration-file layers. An invalid selected value fails instead of falling back. `HTTP_PORT` maps internally to the framework's `HTTP_PORTS` key; `--urls`, `ASPNETCORE_URLS`, and explicit Kestrel endpoints retain their higher-priority URL/endpoint behavior. The single-port validation applies when `HTTP_PORT` supplies the effective port setting. Standalone execution without listening settings retains the framework default; the Dockerfile supplies `HTTP_PORT=8080`.
+
+The command above reads `SECRET_TOKEN` from the shell environment. Alternatively, copy [`.env.example`](.env.example) to an ignored `.env`, set the empty secret placeholder locally, and replace `-e SECRET_TOKEN` with `--env-file .env`. Do not commit real credentials. Compose can explicitly pass its shell/`.env` interpolation values into the container:
+
+```yaml
+services:
+  media-lens:
+    image: media-lens:local
+    environment:
+      SECRET_TOKEN: "${SECRET_TOKEN:?Set SECRET_TOKEN before starting}"
+      HTTP_PORT: "8080"
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=32m
+```
+
+Changing `HTTP_PORT` does not change Docker port publishing or `EXPOSE`. For example, `-e HTTP_PORT=9000 -p 127.0.0.1:8080:9000` forwards host port 8080 to container port 9000. For public access, terminate HTTPS at a trusted reverse proxy or deployment platform and keep the proxy-to-container connection controlled. A shared token proves possession, not a specific website or App; avoid embedding it in a public frontend, and do not treat CORS as API authentication. Rotate the secret by updating runtime configuration and restarting/recreating the service; the old secret then stops working.
+
+Reproduce production-image checks after building with `python3 tools/validate-api-access-control.py`; only synthetic credentials are used and its temporary containers are removed. See the [access-control validation record](docs/validation/api-access-control.md) for boundary, regression, and Docker evidence and their scope.
 
 Image build and container checks passed, including discovery, both POST routes, Cookie rejection, and a read-only root filesystem without persistent writes. Real media checks and deployment checks are recorded separately. See the [Douyin container validation](docs/validation/container-validation.json) and [Bilibili API/container evidence](docs/validation/2026-10-31-bilibili-success.json).
 

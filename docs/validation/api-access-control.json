@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-01T09:09:49.473733+00:00",
+  "image": "media-lens:local",
+  "imageId": "sha256:f6ab7c94e8e0e03e40ab91ac86969b4f4ce59a363058439c117278435790b519",
+  "architecture": "arm64",
+  "livePlatformRequests": false,
+  "scope": "Production image startup, authentication, both platform routes' input errors, port publishing, read-only non-root runtime; synthetic inputs only.",
+  "passed": 51,
+  "checks": [
+    {
+      "name": "linux-image",
+      "passed": true,
+      "architecture": "arm64"
+    },
+    {
+      "name": "http-port-image-default",
+      "passed": true
+    },
+    {
+      "name": "missing-secret",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "empty-secret",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "blank-secret",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "secret-31",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "secret-257",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "non-ascii-secret",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "invalid-alias-no-fallback",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "port-zero",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "port-overflow",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "port-list-alias",
+      "passed": true,
+      "exitCode": 1
+    },
+    {
+      "name": "secret-32-missing-header",
+      "passed": true
+    },
+    {
+      "name": "secret-32-discovery",
+      "passed": true
+    },
+    {
+      "name": "secret-32-mismatch",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-31-/api/v1/platforms",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-31-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-31-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-257-/api/v1/platforms",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-257-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-request-257-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-authorized-input-validation-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-authorized-input-validation-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-authorized-input-validation-/api/v1/platforms/bilibili/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-32-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "secret-32-read-only",
+      "passed": true
+    },
+    {
+      "name": "secret-32-non-root",
+      "passed": true
+    },
+    {
+      "name": "secret-32-no-root-filesystem-writes",
+      "passed": true
+    },
+    {
+      "name": "secret-256-missing-header",
+      "passed": true
+    },
+    {
+      "name": "secret-256-discovery",
+      "passed": true
+    },
+    {
+      "name": "secret-256-mismatch",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-31-/api/v1/platforms",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-31-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-31-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-257-/api/v1/platforms",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-257-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-request-257-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-authorized-input-validation-/api/v1/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-authorized-input-validation-/api/v1/platforms/douyin/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-authorized-input-validation-/api/v1/platforms/bilibili/resolve",
+      "passed": true
+    },
+    {
+      "name": "secret-256-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "secret-256-read-only",
+      "passed": true
+    },
+    {
+      "name": "secret-256-non-root",
+      "passed": true
+    },
+    {
+      "name": "secret-256-no-root-filesystem-writes",
+      "passed": true
+    },
+    {
+      "name": "alias-port-9000",
+      "passed": true
+    },
+    {
+      "name": "native-secret-8080",
+      "passed": true
+    },
+    {
+      "name": "command-secret-8080",
+      "passed": true
+    },
+    {
+      "name": "command-secret-rejects-alias",
+      "passed": true
+    },
+    {
+      "name": "command-port-9001",
+      "passed": true
+    },
+    {
+      "name": "command-url-9002",
+      "passed": true
+    },
+    {
+      "name": "native-url-9003",
+      "passed": true
+    }
+  ]
+}

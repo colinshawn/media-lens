@@ -22,6 +22,7 @@ packages
 **/*.DotSettings.user
 
 # Local configuration and credentials
+**/Properties/launchSettings.json
 **/.env
 **/.env.*
 !**/.env.example

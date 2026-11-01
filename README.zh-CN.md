@@ -162,9 +162,11 @@ dotnet format MediaLens.slnx --no-restore --verify-no-changes
 本地启动 API：
 
 ```sh
+export SECRET_TOKEN="$(openssl rand -hex 32)"
 dotnet run --project src/MediaLens.Api -- --urls http://127.0.0.1:8080
-curl http://127.0.0.1:8080/api/v1/platforms
+curl -H "Authorization: Bearer ${SECRET_TOKEN}" http://127.0.0.1:8080/api/v1/platforms
 curl -X POST http://127.0.0.1:8080/api/v1/resolve \
+  -H "Authorization: Bearer ${SECRET_TOKEN}" \
   -H 'Content-Type: application/json' \
   -d '{"text":"https://www.douyin.com/video/123456"}'
 ```
@@ -204,12 +206,47 @@ Dockerfile 使用 Linux 多阶段构建：
 ```sh
 docker build -t media-lens:local .
 docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
-  -p 127.0.0.1:8080:8080 media-lens:local
+  -e SECRET_TOKEN -p 127.0.0.1:8080:8080 media-lens:local
 ```
 
 本机启用 TUN Fake-IP DNS 时，需让平台和 CDN 主机返回真实公网地址；Bilibili 包括 bilibili.com、b23.tv 和 bilivideo.com 的相应主机。服务继续拒绝合成、内网和保留地址，详见[抖音网络条件](docs/validation/cookie-free-douyin.md)与[Bilibili 网络条件](docs/validation/cookie-free-bilibili.md)。诊断 DNS 或 hosts 不作为项目部署配置。
 
-容器使用基础镜像提供的非 root 用户，不依赖浏览器、数据库、Redis、媒体卷或账号配置。环境变量 `MediaLens__ResolutionTimeoutSeconds` 可设置 1—120 秒的总解析时限，默认 30 秒；监听地址采用 ASP.NET Core 标准环境设置，镜像的 `ASPNETCORE_HTTP_PORTS` 为 8080。
+容器使用基础镜像提供的非 root 用户，不依赖浏览器、数据库、Redis、媒体卷或上游账号配置。环境变量 `MediaLens__ResolutionTimeoutSeconds` 可设置 1—120 秒的总解析时限，默认 30 秒。
+
+### 接口访问与运行配置
+
+**部署兼容性变更：**三个 API 均要求 `Authorization: Bearer <token>`，平台发现和探测请求也需要携带凭证。最终生效的密钥缺失或非法时，程序在监听前以非零状态退出，不提供默认密钥、自动生成或匿名回退。升级现有容器时必须同步注入密钥并更新调用方。
+
+| 环境变量 | 用途 | 校验与默认值 | 原生兼容入口 |
+| --- | --- | --- | --- |
+| `SECRET_TOKEN` | 本服务共享访问凭证 | 必填；32～256 个符合 Bearer 字符语法的 ASCII 字符，包含边界 | `MediaLens__Auth__SecretToken` / `MediaLens:Auth:SecretToken` |
+| `HTTP_PORT` | 容器内 HTTP 监听端口 | 单个十进制整数，1～65535；镜像默认 8080 | 显式 URL / Kestrel 端点 |
+
+Dockerfile 直接设置 `ENV HTTP_PORT=8080`，启动容器时覆盖 `HTTP_PORT` 即可修改端口，并需注入必填的 `SECRET_TOKEN`。端口环境变量统一使用 `HTTP_PORT`，程序不再为其他端口环境变量提供兼容别名。开发用 `launchSettings.json` 已排除出构建上下文。
+
+长度按 token 本体计数，不包含 `Bearer ` 前缀，也不按 Base64 解码后的字节数计算。非 ASCII、空白、非法填充及长度越界均被拒绝，不裁剪或截断。建议使用 32 个安全随机字节生成密钥，例如 64 字符十六进制或 43 字符无填充 Base64URL；长度合规不等于随机强度合格。密钥仅用于 API 入站校验，不传入平台请求、响应下载头或日志。进入鉴权层的无效凭证返回 `401 / UNAUTHORIZED`、`WWW-Authenticate: Bearer` 和既有 `requestId + error` JSON；非法格式在计算摘要与正文绑定前拒绝。
+
+针对同一个内部配置键，优先级为：命令行 > 对外环境变量 > 配置文件 > 默认值。密钥仍支持 .NET 原生环境变量，优先级位于对外变量与配置文件之间。已选中的非法值直接失败，不回退。`HTTP_PORT` 在内部映射为框架的 `HTTP_PORTS` 配置键；`--urls`、`ASPNETCORE_URLS` 和显式 Kestrel 端点继续按框架规则优先于端口模式。单端口校验只在 `HTTP_PORT` 提供最终端口配置时生效。非容器运行且完全没有监听配置时保留框架默认值；Dockerfile 设置 `HTTP_PORT=8080`。
+
+上方 Docker 命令从当前 shell 环境读取 `SECRET_TOKEN`。也可将 [`.env.example`](.env.example) 复制为已忽略的 `.env`，在本地填入空的密钥占位，再用 `--env-file .env` 替换 `-e SECRET_TOKEN`。真实密钥不得提交到仓库。Compose 可显式把 shell/`.env` 的插值结果传入容器：
+
+```yaml
+services:
+  media-lens:
+    image: media-lens:local
+    environment:
+      SECRET_TOKEN: "${SECRET_TOKEN:?请先配置 SECRET_TOKEN}"
+      HTTP_PORT: "8080"
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=32m
+```
+
+修改 `HTTP_PORT` 不会自动修改 Docker 发布端口或 `EXPOSE`。例如 `-e HTTP_PORT=9000 -p 127.0.0.1:8080:9000` 表示宿主机 8080 转发到容器内 9000。公网入口应由可信反向代理或部署平台提供 HTTPS，代理至容器的链路也应受控。共享 token 只证明持有密钥，不能证明来自指定网站或 App；避免在公开前端内置共享密钥，CORS 也不能替代接口鉴权。更新运行配置并重启或重建服务即可更换密钥，旧密钥随即失效。
+
+构建镜像后可运行 `python3 tools/validate-api-access-control.py` 复现生产镜像检查；脚本仅使用合成凭证，并清理本次临时容器。长度边界、回归与 Docker 证据及适用范围见[访问控制验证记录](docs/validation/api-access-control.md)。
 
 镜像构建、平台发现、两个 POST、Cookie 输入拒绝和只读文件系统验证均已通过，未产生持久化写入。真实媒体与部署检查分别记录，详见[抖音容器验证](docs/validation/container-validation.json)与[Bilibili API/容器证据](docs/validation/2026-10-31-bilibili-success.json)。
 

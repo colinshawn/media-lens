@@ -13,7 +13,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish ./
 COPY LICENSE ./LICENSE
-ENV ASPNETCORE_HTTP_PORTS=8080
+# Runtime settings are injected with docker run --env / --env-file:
+#   SECRET_TOKEN: required; 32-256 ASCII characters using Bearer token syntax.
+#   HTTP_PORT: container-internal HTTP port; defaults to 8080.
+# SECRET_TOKEN has no image default; the application rejects missing or invalid values.
+ENV HTTP_PORT=8080
+# EXPOSE documents the default; publish the selected container port with -p / ports.
 EXPOSE 8080
 USER $APP_UID
 ENTRYPOINT ["dotnet", "MediaLens.Api.dll"]

@@ -9,9 +9,10 @@ namespace MediaLens.Api;
 
 public partial class Program
 {
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var runtimeConfiguration = RuntimeConfiguration.Configure(builder.Configuration, args);
         builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
         builder.WebHost.ConfigureKestrel(options =>
             options.Limits.MaxRequestBodySize = ApiDefaults.MaximumRequestBodyBytes);
@@ -47,10 +48,25 @@ public partial class Program
             provider.GetRequiredService<TimeProvider>(),
             provider.GetRequiredService<ResolutionSettings>()));
 
-        var app = builder.Build();
+        await using var app = builder.Build();
+        SecretToken secret;
+        try
+        {
+            secret = new SecretToken(app.Configuration[SecretToken.ConfigurationKey]);
+            runtimeConfiguration.ValidatePortAlias(builder.Configuration);
+        }
+        catch (InvalidOperationException exception)
+        {
+            // 这两个配置校验器只生成固定的安全消息；受控退出避免进入崩溃转储路径。
+            app.Logger.LogCritical("{ConfigurationError}", exception.Message);
+            return ApiDefaults.InvalidConfigurationExitCode;
+        }
         app.UseApiErrors();
+        app.UseRouting();
+        app.UseApiAccessControl(secret);
         app.MapMediaResolutionApi();
         await app.RunAsync();
+        return ApiDefaults.SuccessExitCode;
     }
 
     private static ResolutionSettings ReadSettings(IConfiguration configuration)
@@ -72,6 +88,8 @@ public partial class Program
 
 internal static class ApiDefaults
 {
+    public const int SuccessExitCode = 0;
+    public const int InvalidConfigurationExitCode = 1;
     public const int MaximumRequestBodyBytes = 65_536;
     public const int MinimumTimeoutSeconds = 1;
     public const int MaximumTimeoutSeconds = 120;
