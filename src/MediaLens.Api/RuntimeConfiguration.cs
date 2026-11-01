@@ -7,8 +7,13 @@ internal sealed class RuntimeConfiguration(IConfigurationProvider? portAliasProv
 {
     private const string SecretEnvironmentVariable = "SECRET_TOKEN";
     private const string PortEnvironmentVariable = "HTTP_PORT";
+    private const string PublicIpValidationEnvironmentVariable = "VALIDATE_PUBLIC_IP";
+    internal const string PublicIpValidationConfigurationKey = "MediaLens:Http:ValidatePublicIp";
     private const int MinimumPort = 1;
     private const int MaximumPort = 65_535;
+
+    // 启动校验后保存快照，运行中的单例策略不随配置文件重载而改变。
+    public bool ValidatePublicIp { get; private set; } = true;
 
     public static RuntimeConfiguration Configure(ConfigurationManager configuration, string[] args)
     {
@@ -21,6 +26,10 @@ internal sealed class RuntimeConfiguration(IConfigurationProvider? portAliasProv
         {
             aliases[WebHostDefaults.HttpPortsKey] = port;
         }
+        if (Environment.GetEnvironmentVariable(PublicIpValidationEnvironmentVariable) is { } validatePublicIp)
+        {
+            aliases[PublicIpValidationConfigurationKey] = validatePublicIp;
+        }
 
         configuration.AddInMemoryCollection(aliases);
         var provider = aliases.ContainsKey(WebHostDefaults.HttpPortsKey)
@@ -32,7 +41,26 @@ internal sealed class RuntimeConfiguration(IConfigurationProvider? portAliasProv
         return new RuntimeConfiguration(provider);
     }
 
-    public void ValidatePortAlias(ConfigurationManager configuration)
+    public void Validate(ConfigurationManager configuration)
+    {
+        ValidatePortAlias(configuration);
+        var value = configuration[PublicIpValidationConfigurationKey];
+        if (value is null)
+        {
+            ValidatePublicIp = true;
+            return;
+        }
+
+        if (!bool.TryParse(value, out var validatePublicIp))
+        {
+            throw new InvalidOperationException(
+                "VALIDATE_PUBLIC_IP (MediaLens:Http:ValidatePublicIp) must be true or false.");
+        }
+
+        ValidatePublicIp = validatePublicIp;
+    }
+
+    private void ValidatePortAlias(ConfigurationManager configuration)
     {
         if (portAliasProvider is null || !string.IsNullOrEmpty(configuration[WebHostDefaults.ServerUrlsKey]) ||
             configuration.GetSection("Kestrel:Endpoints").GetChildren().Any())

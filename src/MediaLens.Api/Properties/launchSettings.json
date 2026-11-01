@@ -5,6 +5,7 @@
       "launchBrowser": false,
       "environmentVariables": {
         "HTTP_PORT": "8088",
+        "VALIDATE_PUBLIC_IP": false,
         "SECRET_TOKEN": "bc377d68c5f7410d96abcebb374b945b",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

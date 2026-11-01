@@ -281,7 +281,7 @@ internal sealed class ApiProcess : IAsyncDisposable
         foreach (var key in start.Environment.Keys.Where(key =>
                      key.StartsWith("ASPNETCORE_", StringComparison.OrdinalIgnoreCase) ||
                      key.StartsWith("MediaLens", StringComparison.OrdinalIgnoreCase) ||
-                     key is "SECRET_TOKEN" or "HTTP_PORT" or "HTTP_PORTS" or "HTTPS_PORTS" or
+                     key is "SECRET_TOKEN" or "HTTP_PORT" or "VALIDATE_PUBLIC_IP" or "HTTP_PORTS" or "HTTPS_PORTS" or
                          "URLS" or "DOTNET_URLS" or "DOTNET_HTTP_PORTS" or "DOTNET_HTTPS_PORTS").ToArray())
         {
             start.Environment.Remove(key);

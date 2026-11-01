@@ -12,6 +12,59 @@ public sealed class CookieFreeHttpClientTests
     private const int CancellationDelayMilliseconds = 200;
     private const int TestDeadlineSeconds = 10;
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DisablingIpValidationPreservesCookieIsolationAcrossMetadataAndMediaRedirects(bool bilibili)
+    {
+        var profile = bilibili ? PlatformHttpProfile.Bilibili : PlatformHttpProfile.Douyin;
+        var root = bilibili ? "http://www.bilibili.com/" : FixtureRoot;
+        var cdn = bilibili ? "http://upos-sz-mirrorcos.bilivideo.com/" : "http://v3.douyinvod.com/";
+        var metadataPath = bilibili ? "/video/BV1xx411c7mD" : "/metadata";
+        await using var server = new LoopbackHttpServer((request, _) => Task.FromResult(request.Target switch
+        {
+            "/start" => Redirect(metadataPath),
+            "/play" => Redirect(cdn + "media.mp4"),
+            "/media.mp4" => new ServerReply(HttpStatusCode.OK, ContentType: "video/mp4"),
+            _ => new ServerReply(HttpStatusCode.OK)
+        }));
+        using var client = new CookieFreeHttpClient(
+            new LoopbackTargetPolicy(server.Port, profile, validatePublicIp: false),
+            profile: profile);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(TestDeadlineSeconds));
+
+        var metadata = await client.GetAsync(new Uri(root + "start"), deadline.Token);
+        var media = await client.ResolveMediaAsync(new Uri(root + "play"), "video", deadline.Token);
+
+        Assert.Equal(metadataPath, metadata.FinalUri.AbsolutePath);
+        Assert.Equal(cdn + "media.mp4", media.FinalUri.AbsoluteUri);
+        Assert.Equal(["/start", metadataPath, "/play", "/media.mp4"], server.Requests.Select(request => request.Target));
+        Assert.All(server.Requests, request =>
+        {
+            Assert.False(request.Headers.ContainsKey("Cookie"));
+            Assert.False(request.Headers.ContainsKey("Authorization"));
+            Assert.False(request.Headers.ContainsKey("Proxy-Authorization"));
+            Assert.Equal(profile.Referer, request.Headers["Referer"]);
+        });
+    }
+
+    [Theory]
+    [InlineData("http://127.0.0.1/private")]
+    [InlineData("http://www.douyin.com:8443/private")]
+    [InlineData("http://user:password@www.douyin.com/private")]
+    [InlineData("ftp://www.douyin.com/private")]
+    public async Task DisablingIpValidationStillRejectsOutOfScopeRedirectsBeforeConnecting(string target)
+    {
+        await using var server = new LoopbackHttpServer((_, _) => Task.FromResult(Redirect(target)));
+        using var client = new CookieFreeHttpClient(new LoopbackTargetPolicy(server.Port, validatePublicIp: false));
+
+        var error = await Assert.ThrowsAsync<UpstreamRequestException>(() =>
+            client.GetAsync(new Uri(FixtureRoot), CancellationToken.None));
+
+        Assert.Equal(ProbeOutcomes.TargetRejected, error.Outcome);
+        Assert.Single(server.Requests);
+    }
+
     [Fact]
     public async Task SetCookieIsIgnoredAcrossRelativeRedirectsAndRepeatedCalls()
     {

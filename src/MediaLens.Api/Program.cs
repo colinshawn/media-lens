@@ -21,10 +21,13 @@ public partial class Program
         builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton(ReadSettings(builder.Configuration));
-        builder.Services.AddSingleton<IUpstreamClient>(_ => new CookieFreeHttpClient(new PublicHttpTargetPolicy()));
+        builder.Services.AddSingleton<IUpstreamClient>(_ => new CookieFreeHttpClient(
+            new PublicHttpTargetPolicy(validatePublicIp: runtimeConfiguration.ValidatePublicIp)));
         builder.Services.AddKeyedSingleton<IUpstreamClient>(BilibiliAdapter.PlatformId, (_, _) =>
             new CookieFreeHttpClient(
-                new PublicHttpTargetPolicy(profile: PlatformHttpProfile.Bilibili),
+                new PublicHttpTargetPolicy(
+                    profile: PlatformHttpProfile.Bilibili,
+                    validatePublicIp: runtimeConfiguration.ValidatePublicIp),
                 profile: PlatformHttpProfile.Bilibili));
         builder.Services.AddSingleton(provider => new BilibiliAdapter(
             provider.GetRequiredKeyedService<IUpstreamClient>(BilibiliAdapter.PlatformId),
@@ -53,13 +56,18 @@ public partial class Program
         try
         {
             secret = new SecretToken(app.Configuration[SecretToken.ConfigurationKey]);
-            runtimeConfiguration.ValidatePortAlias(builder.Configuration);
+            runtimeConfiguration.Validate(builder.Configuration);
         }
         catch (InvalidOperationException exception)
         {
-            // 这两个配置校验器只生成固定的安全消息；受控退出避免进入崩溃转储路径。
+            // 启动配置校验器只生成固定的安全消息；受控退出避免进入崩溃转储路径。
             app.Logger.LogCritical("{ConfigurationError}", exception.Message);
             return ApiDefaults.InvalidConfigurationExitCode;
+        }
+        if (!runtimeConfiguration.ValidatePublicIp)
+        {
+            app.Logger.LogWarning(
+                "Public IP validation is disabled (VALIDATE_PUBLIC_IP=false). Allowed hosts may resolve to restricted addresses.");
         }
         app.UseApiErrors();
         app.UseRouting();

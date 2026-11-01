@@ -136,9 +136,12 @@ internal sealed record ServerReply(
     long? DeclaredContentLength = null);
 
 /// <summary>仅供测试把合成的平台域名连接到本机替身；生产策略仍禁止环回地址。</summary>
-internal sealed class LoopbackTargetPolicy(int port, PlatformHttpProfile? profile = null) : IHttpTargetPolicy
+internal sealed class LoopbackTargetPolicy(
+    int port,
+    PlatformHttpProfile? profile = null,
+    bool validatePublicIp = true) : IHttpTargetPolicy
 {
-    private readonly PublicHttpTargetPolicy _policy = new(profile: profile);
+    private readonly PublicHttpTargetPolicy _policy = new(profile: profile, validatePublicIp: validatePublicIp);
     public void ValidateUri(Uri uri)
     {
         _policy.ValidateUri(uri);

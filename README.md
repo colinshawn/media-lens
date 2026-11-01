@@ -213,7 +213,7 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
   -e SECRET_TOKEN -p 127.0.0.1:8080:8080 media-lens:local
 ```
 
-If your development machine uses TUN Fake-IP DNS, platform/CDN hosts must resolve to real public addresses. For Bilibili this includes the relevant bilibili.com, b23.tv, and bilivideo.com hosts. Synthetic, private, and reserved addresses remain rejected. See [Douyin network conditions](docs/validation/cookie-free-douyin.md) and [Bilibili network conditions](docs/validation/cookie-free-bilibili.md). Diagnostic DNS or hosts mappings are not deployment configuration.
+By default, platform/CDN hosts must resolve to real public addresses. If your development machine uses TUN Fake-IP DNS, configure real-address resolution for the relevant hosts; for Bilibili this includes bilibili.com, b23.tv, and bilivideo.com. For temporary diagnostics on a controlled network, the [runtime switch below](#api-access-and-runtime-configuration) can disable public IP checks. This does not configure proxy routing or guarantee that Fake-IP addresses are reachable. See [Douyin network conditions](docs/validation/cookie-free-douyin.md) and [Bilibili network conditions](docs/validation/cookie-free-bilibili.md).
 
 The container runs as the base image's non-root user. No browser, database, Redis, media volume, or upstream account configuration is required. Set `MediaLens__ResolutionTimeoutSeconds` to an integer from 1 through 120 to change the total resolution deadline (default 30 seconds).
 
@@ -225,12 +225,15 @@ The container runs as the base image's non-root user. No browser, database, Redi
 | --- | --- | --- | --- |
 | `SECRET_TOKEN` | Shared API credential | Required; 32–256 ASCII characters, inclusive, using Bearer token syntax | `MediaLens__Auth__SecretToken` / `MediaLens:Auth:SecretToken` |
 | `HTTP_PORT` | Container-internal HTTP port | One decimal integer, 1–65535; image default 8080 | Explicit URLs / Kestrel endpoints |
+| `VALIDATE_PUBLIC_IP` | Validate upstream IP addresses as public | `true` / `false`, case-insensitive; default `true` | `MediaLens__Http__ValidatePublicIp` / `MediaLens:Http:ValidatePublicIp` |
 
-`SECRET_TOKEN` and `HTTP_PORT` are MediaLens conventions read and mapped by the application; Docker passes them into the container. The Dockerfile sets `ENV HTTP_PORT=8080`. Override `HTTP_PORT` at container startup to change the port, and inject the required `SECRET_TOKEN` at runtime. `HTTP_PORT` is the project's single port environment variable; the application does not add compatibility aliases for other port environment variables. Development `launchSettings.json` profiles are excluded from the build context.
+These environment variable names are MediaLens conventions read and mapped by the application; Docker passes them into the container. The Dockerfile sets `ENV HTTP_PORT=8080`. Override `HTTP_PORT` at container startup to change the port, and inject the required `SECRET_TOKEN` at runtime. `HTTP_PORT` is the project's single port environment variable; the application does not add compatibility aliases for other port environment variables. Development `launchSettings.json` profiles are excluded from the build context.
 
 Length counts the token text itself, without the `Bearer ` prefix or Base64 decoding. Non-ASCII, whitespace, malformed padding, and out-of-range values are rejected without trimming or truncation. Use a cryptographically random secret, such as 32 random bytes encoded as 64 hexadecimal characters or 43 unpadded Base64URL characters; length alone does not guarantee randomness. Secrets remain in the API layer and never enter upstream requests, response download headers, or logs. Invalid credentials reaching authentication return `401 / UNAUTHORIZED`, `WWW-Authenticate: Bearer`, and the existing `requestId + error` JSON before body binding or digest calculation for malformed values.
 
-For the same configuration key, precedence is command line > public environment variable > configuration file > default. The secret's native .NET environment variable remains supported between the public variable and configuration-file layers. An invalid selected value fails instead of falling back. `HTTP_PORT` maps internally to the framework's `HTTP_PORTS` key; `--urls`, `ASPNETCORE_URLS`, and explicit Kestrel endpoints retain their higher-priority URL/endpoint behavior. The single-port validation applies when `HTTP_PORT` supplies the effective port setting. Standalone execution without listening settings retains the framework default; the Dockerfile supplies `HTTP_PORT=8080`.
+For the same configuration key, precedence is command line > public environment variable > native .NET environment variable (where supported) > configuration file > default. An invalid selected value fails instead of falling back. `HTTP_PORT` maps internally to the framework's `HTTP_PORTS` key; `--urls`, `ASPNETCORE_URLS`, and explicit Kestrel endpoints retain their higher-priority URL/endpoint behavior. The single-port validation applies when `HTTP_PORT` supplies the effective port setting. Standalone execution without listening settings retains the framework default; the Dockerfile supplies `HTTP_PORT=8080`.
+
+To temporarily disable public IP checks, add `-e VALIDATE_PUBLIC_IP=false` to `docker run`, or set it in your `.env` passed with `--env-file`. The API applies the startup value to both Douyin and Bilibili metadata, short-link, and media connections. Restart or recreate the service after changing it; set `true` and restart to restore checks. Empty or invalid values, including `0`, `1`, and `yes`, fail before listening. A disabled-check warning is logged at startup. Allowed platform hosts may then resolve to loopback, private, reserved, or synthetic addresses, so use this mode only on a controlled diagnostic network. Host, HTTP(S), default-port, URL-credential, redirect, authentication, and cookie-free restrictions remain active. The Probe tool keeps its default public IP checks.
 
 The command above reads `SECRET_TOKEN` from the shell environment. Alternatively, copy [`.env.example`](.env.example) to an ignored `.env`, replace the empty `SECRET_TOKEN=` placeholder with a generated secret locally, and replace `-e SECRET_TOKEN` with `--env-file .env`. Do not commit real credentials. Neither `docker run` nor `dotnet run` automatically loads `.env`. Compose uses `.env` for interpolation; pass values into the container through `environment` as below or through `env_file`:
 
@@ -241,6 +244,7 @@ services:
     environment:
       SECRET_TOKEN: "${SECRET_TOKEN:?Set SECRET_TOKEN before starting}"
       HTTP_PORT: "8080"
+      VALIDATE_PUBLIC_IP: "${VALIDATE_PUBLIC_IP-true}"
     ports:
       - "127.0.0.1:8080:8080"
     read_only: true
@@ -251,6 +255,8 @@ services:
 Changing `HTTP_PORT` does not change Docker port publishing or `EXPOSE`. For example, `-e HTTP_PORT=9000 -p 127.0.0.1:8080:9000` forwards host port 8080 to container port 9000. For public access, terminate HTTPS at a trusted reverse proxy or deployment platform and keep the proxy-to-container connection controlled. A shared token proves possession, not a specific website or App; avoid embedding it in a public frontend, and do not treat CORS as API authentication. Rotate the secret by updating runtime configuration and restarting/recreating the service; the old secret then stops working.
 
 Reproduce production-image checks after building with `python3 tools/validate-api-access-control.py`; only synthetic credentials are used and its temporary containers are removed. See the [access-control validation record](docs/validation/api-access-control.md) for boundary, regression, and Docker evidence and their scope.
+
+For switch-specific container checks, run `python3 tools/validate-public-ip-validation.py --image media-lens:local`. See the [public IP validation record](docs/validation/public-ip-validation.md) for configuration, controlled-connection, and Docker coverage.
 
 Image build and container checks passed, including discovery, both POST routes, Cookie rejection, and a read-only root filesystem without persistent writes. Real media checks and deployment checks are recorded separately. See the [Douyin container validation](docs/validation/container-validation.json) and [Bilibili API/container evidence](docs/validation/2026-10-31-bilibili-success.json).
 

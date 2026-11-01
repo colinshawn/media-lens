@@ -6,13 +6,16 @@ namespace MediaLens.Http;
 public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
 {
     private readonly PlatformHttpProfile _profile;
+    private readonly bool _validatePublicIp;
     private readonly Dictionary<string, IPAddress[]> _addressOverrides = new(StringComparer.OrdinalIgnoreCase);
 
     public PublicHttpTargetPolicy(
         IReadOnlyDictionary<string, IPAddress[]>? addressOverrides = null,
-        PlatformHttpProfile? profile = null)
+        PlatformHttpProfile? profile = null,
+        bool validatePublicIp = true)
     {
         _profile = profile ?? PlatformHttpProfile.Douyin;
+        _validatePublicIp = validatePublicIp;
         if (addressOverrides is null)
         {
             return;
@@ -26,12 +29,9 @@ public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
             }
 
             ValidateUri(new Uri($"https://{host}/"));
-            if (addresses.Length == 0 || addresses.Any(address => !IsPublicAddress(address)))
-            {
-                throw new UpstreamRequestException(HttpFailureCodes.TargetRejected);
-            }
+            ValidateAddresses(addresses);
 
-            // 诊断用公网 DNS 映射同样不能引入私网目标，且复制后不受调用方修改影响。
+            // 诊断映射遵循同一公网检查开关，且复制后不受调用方修改影响。
             _addressOverrides.Add(host, addresses.ToArray());
         }
     }
@@ -60,11 +60,8 @@ public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
             ? configuredAddresses
             : await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
 
-        // 整个解析结果必须为公网地址，连接时使用刚校验过的地址而非再次解析域名。
-        if (addresses.Length == 0 || addresses.Any(address => !IsPublicAddress(address)))
-        {
-            throw new UpstreamRequestException(HttpFailureCodes.TargetRejected);
-        }
+        // 开关只控制公网属性检查；始终固定本次解析结果建连，避免再次解析域名。
+        ValidateAddresses(addresses);
 
         SocketException? lastFailure = null;
         foreach (var address in addresses)
@@ -93,7 +90,15 @@ public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
             }
         }
 
-        throw new HttpRequestException("No validated public address was reachable.", lastFailure);
+        throw new HttpRequestException("No resolved target address was reachable.", lastFailure);
+    }
+
+    private void ValidateAddresses(IPAddress[] addresses)
+    {
+        if (addresses.Length == 0 || (_validatePublicIp && addresses.Any(address => !IsPublicAddress(address))))
+        {
+            throw new UpstreamRequestException(HttpFailureCodes.TargetRejected);
+        }
     }
 
     internal static bool IsPublicAddress(IPAddress address) =>

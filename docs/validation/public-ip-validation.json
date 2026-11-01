@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-01T12:17:48.334344+00:00",
+  "image": "media-lens:public-ip-validation",
+  "imageId": "sha256:55a7690024ad635930d124235f7331bc4e52eeed97d2c990e772e91088fa7270",
+  "architecture": "arm64",
+  "livePlatformRequests": false,
+  "scope": "Production image switch configuration, startup warnings, safe failure, authentication, input and Cookie boundaries; no upstream connections.",
+  "checks": [
+    {
+      "name": "linux-image",
+      "passed": true
+    },
+    {
+      "name": "switch-default-does-not-mask-other-sources",
+      "passed": true
+    },
+    {
+      "name": "default-authentication",
+      "passed": true
+    },
+    {
+      "name": "default-discovery",
+      "passed": true
+    },
+    {
+      "name": "default-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "default-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "default-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "default-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "default-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "default-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "alias-true-authentication",
+      "passed": true
+    },
+    {
+      "name": "alias-true-discovery",
+      "passed": true
+    },
+    {
+      "name": "alias-true-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-true-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-true-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "alias-true-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "alias-true-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "alias-true-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "alias-false-authentication",
+      "passed": true
+    },
+    {
+      "name": "alias-false-discovery",
+      "passed": true
+    },
+    {
+      "name": "alias-false-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-false-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-false-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "alias-false-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "alias-false-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "alias-false-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-authentication",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-discovery",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "alias-uppercase-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "native-false-authentication",
+      "passed": true
+    },
+    {
+      "name": "native-false-discovery",
+      "passed": true
+    },
+    {
+      "name": "native-false-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "native-false-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "native-false-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "native-false-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "native-false-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "native-false-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-authentication",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-discovery",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "alias-over-native-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "command-enables-authentication",
+      "passed": true
+    },
+    {
+      "name": "command-enables-discovery",
+      "passed": true
+    },
+    {
+      "name": "command-enables-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-enables-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-enables-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "command-enables-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "command-enables-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "command-enables-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "command-disables-authentication",
+      "passed": true
+    },
+    {
+      "name": "command-disables-discovery",
+      "passed": true
+    },
+    {
+      "name": "command-disables-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-disables-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-disables-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "command-disables-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "command-disables-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "command-disables-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-authentication",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-discovery",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-douyin-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-bilibili-input-boundary",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-cookie-rejected",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-startup-mode",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-safe-logs",
+      "passed": true
+    },
+    {
+      "name": "command-over-invalid-alias-non-root-read-only",
+      "passed": true
+    },
+    {
+      "name": "alias-empty-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "alias-blank-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "alias-zero-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "alias-one-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "alias-yes-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "alias-sentinel-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "native-invalid-safe-startup-failure",
+      "passed": true
+    },
+    {
+      "name": "command-invalid-safe-startup-failure",
+      "passed": true
+    }
+  ]
+}
