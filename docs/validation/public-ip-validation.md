@@ -1,6 +1,6 @@
 # 公网 IP 校验开关验证
 
-验证日期：2026-11-01（Asia/Shanghai）。分支：`features/public-ip-validation-toggle`；变更：[add-public-ip-validation-toggle](../../openspec/changes/add-public-ip-validation-toggle/proposal.md)。
+验证日期：2026-11-01（Asia/Shanghai）。分支：`features/public-ip-validation-toggle`；归档变更：[add-public-ip-validation-toggle](../../openspec/changes/archive/2026-11-01-add-public-ip-validation-toggle/proposal.md)。
 
 ## 结果
 

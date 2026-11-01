@@ -34,6 +34,8 @@ context: |
   - 三个 API 端点统一要求单个合法的 Authorization: Bearer 请求头；鉴权失败返回 401、UNAUTHORIZED 和 Bearer challenge。
   - SECRET_TOKEN 为必填配置，token 本体限制为 32～256 个 ASCII 字符，并符合 Bearer 凭证语法；无有效密钥时在监听前以安全错误退出，退出码为 1。
   - 对外端口环境变量统一使用 HTTP_PORT；Dockerfile 默认设置 HTTP_PORT=8080，宿主机端口发布独立配置，保留框架 URL 和显式端点配置方式。
+  - 上游公网 IP 校验默认开启；VALIDATE_PUBLIC_IP=false 可临时关闭 IP 分类，关闭时输出 Warning。两个平台使用启动配置快照，修改后需重启或重建服务。
+  - 关闭 IP 分类后仍拒绝空地址，逐跳保留平台域名、协议、端口、URL 凭据及无 Cookie 限制，并固定解析结果建连；该开关不保证 Fake-IP 路由可达。
   - 服务凭证仅用于入站 API 鉴权，不进入日志或响应，不转发上游，也不用于构造上游身份或 Cookie。
 
   严格无 Cookie：

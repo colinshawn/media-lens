@@ -233,7 +233,13 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
 
 针对同一个内部配置键，优先级为：命令行 > 对外环境变量 > .NET 原生环境变量（支持时）> 配置文件 > 默认值。已选中的非法值直接失败，不回退。`HTTP_PORT` 在内部映射为框架的 `HTTP_PORTS` 配置键；`--urls`、`ASPNETCORE_URLS` 和显式 Kestrel 端点继续按框架规则优先于端口模式。单端口校验只在 `HTTP_PORT` 提供最终端口配置时生效。非容器运行且完全没有监听配置时保留框架默认值；Dockerfile 设置 `HTTP_PORT=8080`。
 
-临时关闭公网 IP 校验时，在 `docker run` 中增加 `-e VALIDATE_PUBLIC_IP=false`，或在通过 `--env-file` 传入的 `.env` 中设置该值。API 将启动配置同时应用于抖音与 Bilibili 的元数据、短链和媒体连接。修改后需重启或重建服务；设回 `true` 并重启即可恢复检查。空值及 `0`、`1`、`yes` 等非法值会在监听前导致启动失败，关闭时记录启动告警。关闭后，允许的平台域名可能连接到环回、内网、保留或合成地址，仅在受控诊断网络使用；域名、HTTP(S)、默认端口、URL 凭据、重定向、鉴权及无 Cookie 限制继续生效。Probe 工具仍默认执行公网 IP 校验。
+临时关闭公网 IP 校验时，在 `docker run` 中增加 `-e VALIDATE_PUBLIC_IP=false`，或在通过 `--env-file` 传入的 `.env` 中设置该值。API 将启动配置同时应用于抖音与 Bilibili 的元数据、短链和媒体连接。
+
+配置在进程启动时读取。直接运行 API 时，修改配置后重启 API 进程。Docker 环境变量在创建容器时确定，修改 `-e`/`--env-file` 后需重新创建容器；Compose 修改环境变量后执行 `docker compose up -d` 应用变更。设回 `true` 并按同样方式应用配置即可恢复检查。
+
+空值及 `0`、`1`、`yes` 等非法值会在监听前导致启动失败。关闭时，每次启动输出一条 `Warning` 级别日志，消息以 `Public IP validation is disabled` 开头。
+
+关闭后，允许的平台域名可能连接到环回、内网、保留或合成地址，仅在受控诊断网络使用；域名、HTTP(S)、默认端口、URL 凭据、重定向、鉴权及无 Cookie 限制继续生效。Probe 工具仍默认执行公网 IP 校验。
 
 上方 Docker 命令从当前 shell 环境读取 `SECRET_TOKEN`。也可将 [`.env.example`](.env.example) 复制为已忽略的 `.env`，在本地将空的 `SECRET_TOKEN=` 占位替换为生成的密钥，再用 `--env-file .env` 替换 `-e SECRET_TOKEN`。真实密钥不得提交到仓库。`docker run` 和 `dotnet run` 不会自动加载 `.env`；Compose 默认用 `.env` 进行变量插值，仍需像下例一样通过 `environment` 或使用 `env_file` 将值传入容器：
 

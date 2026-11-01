@@ -27,4 +27,4 @@
 
 关闭公网检查后，允许域名解析到的环回、内网或保留地址也可能被访问。该模式面向部署方控制的临时诊断，不承诺修复任意代理或 Fake-IP 路由问题，也不代表新增真实平台下载验证。
 
-实现与验证依据见[公网 IP 校验记录](../../../docs/validation/public-ip-validation.md)，测试和 Docker 检查仅使用合成输入。
+实现与验证依据见[公网 IP 校验记录](../../../../docs/validation/public-ip-validation.md)，测试和 Docker 检查仅使用合成输入。
