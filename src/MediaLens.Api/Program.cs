@@ -21,14 +21,18 @@ public partial class Program
         builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton(ReadSettings(builder.Configuration));
-        builder.Services.AddSingleton<IUpstreamClient>(_ => new CookieFreeHttpClient(
-            new PublicHttpTargetPolicy(validatePublicIp: runtimeConfiguration.ValidatePublicIp)));
-        builder.Services.AddKeyedSingleton<IUpstreamClient>(BilibiliAdapter.PlatformId, (_, _) =>
+        builder.Services.AddSingleton<IUpstreamClient>(provider => new TimedUpstreamClient(
             new CookieFreeHttpClient(
-                new PublicHttpTargetPolicy(
-                    profile: PlatformHttpProfile.Bilibili,
-                    validatePublicIp: runtimeConfiguration.ValidatePublicIp),
-                profile: PlatformHttpProfile.Bilibili));
+                new PublicHttpTargetPolicy(validatePublicIp: runtimeConfiguration.ValidatePublicIp)),
+            provider.GetRequiredService<ILogger<TimedUpstreamClient>>()));
+        builder.Services.AddKeyedSingleton<IUpstreamClient>(BilibiliAdapter.PlatformId, (provider, _) =>
+            new TimedUpstreamClient(
+                new CookieFreeHttpClient(
+                    new PublicHttpTargetPolicy(
+                        profile: PlatformHttpProfile.Bilibili,
+                        validatePublicIp: runtimeConfiguration.ValidatePublicIp),
+                    profile: PlatformHttpProfile.Bilibili),
+                provider.GetRequiredService<ILogger<TimedUpstreamClient>>()));
         builder.Services.AddSingleton(provider => new BilibiliAdapter(
             provider.GetRequiredKeyedService<IUpstreamClient>(BilibiliAdapter.PlatformId),
             provider.GetRequiredService<TimeProvider>()));
