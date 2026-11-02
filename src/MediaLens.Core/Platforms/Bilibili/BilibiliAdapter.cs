@@ -20,7 +20,6 @@ public sealed class BilibiliAdapter : IPlatformAdapter, IDisposable
     private const string Mp4Mime = "video/mp4";
     private const int MillisecondsPerSecond = 1_000;
     private const int DurationRoundingToleranceMs = MillisecondsPerSecond;
-    private const int MaximumSources = 2;
     private const int MaximumCandidateAttempts = 16;
     private const string RequestedQuality = "80";
     private const string ProgressiveMp4Format = "1";
@@ -283,14 +282,16 @@ public sealed class BilibiliAdapter : IPlatformAdapter, IDisposable
                     DurationMs: duration,
                     SizeBytes: location.SizeBytes ?? PositiveNumber(segment, "size"),
                     ExpiresAt: null));
-                if (result.Count == MaximumSources)
-                {
-                    break;
-                }
+                // 首个完整 MP4 已确认可用，后续镜像只在前面的候选失败时探测
+                break;
             }
             catch (UpstreamRequestException)
             {
                 // 单个不可信或不可用备用来源可以排除；不会删除必需媒体后返回空成功。
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                transient = true;
             }
             catch (HttpRequestException)
             {

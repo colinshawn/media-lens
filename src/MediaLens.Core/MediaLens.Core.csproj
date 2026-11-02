@@ -3,6 +3,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="MediaLens.Api" />
     <InternalsVisibleTo Include="MediaLens.Probe.Tests" />
     <InternalsVisibleTo Include="MediaLens.Tests" />
   </ItemGroup>

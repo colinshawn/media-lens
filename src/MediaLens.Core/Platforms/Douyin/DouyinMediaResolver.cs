@@ -8,7 +8,6 @@ namespace MediaLens.Platforms.Douyin;
 
 internal sealed class DouyinMediaResolver(IUpstreamClient client, TimeProvider timeProvider)
 {
-    private const int MaximumResolvedCandidates = 2;
     private const int MaximumConcurrentItems = 4;
 
     private static readonly Dictionary<string, string> Extensions = new(StringComparer.OrdinalIgnoreCase)
@@ -99,15 +98,17 @@ internal sealed class DouyinMediaResolver(IUpstreamClient client, TimeProvider t
                     DurationMs: type == MediaTypes.Image ? null : candidate.DurationMs,
                     SizeBytes: location.SizeBytes,
                     ExpiresAt: candidate.ExpiresAt is { } knownExpiry ? ResolutionService.FormatUtc(knownExpiry) : null));
-                if (result.Count == MaximumResolvedCandidates)
-                {
-                    // 调用方只需下载一个候选；保留可用备用后停止无收益的逐档网络探测。
-                    break;
-                }
+                // 每个必需媒体只需一个可用来源，成功后不再等待备用 CDN
+                break;
             }
             catch (UpstreamRequestException)
             {
                 // 无法确认的备用地址可排除，但不能删除必需图片或把实况降级成普通图。
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // 单次连接超时可排除该候选；总时限到期和调用方取消仍向上传播
+                temporaryFailure = true;
             }
             catch (HttpRequestException)
             {

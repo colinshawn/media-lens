@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Net;
+using System.Net.Security;
 using System.Text;
 
 namespace MediaLens.Http;
@@ -7,17 +8,32 @@ namespace MediaLens.Http;
 /// <summary>只读取有限元数据，逐跳展开地址；所有请求均使用相同的无 Cookie 策略。</summary>
 public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
 {
+    private static readonly HttpRequestOptionsKey<ResponseHeadersDeadline> HeadersDeadlineKey = new("MediaLens.ResponseHeadersDeadline");
     private readonly IHttpTargetPolicy _targetPolicy;
     private readonly HttpClient _client;
     private readonly string _userAgent;
     private readonly PlatformHttpProfile _profile;
+    private readonly HttpTimeouts _timeouts;
+    private readonly RemoteCertificateValidationCallback? _certificateValidation;
 
     public CookieFreeHttpClient(
         IHttpTargetPolicy targetPolicy,
         string? userAgent = null,
         PlatformHttpProfile? profile = null)
+        : this(targetPolicy, HttpTimeouts.Default, userAgent, profile)
+    {
+    }
+
+    internal CookieFreeHttpClient(
+        IHttpTargetPolicy targetPolicy,
+        HttpTimeouts timeouts,
+        string? userAgent = null,
+        PlatformHttpProfile? profile = null,
+        RemoteCertificateValidationCallback? certificateValidation = null)
     {
         _targetPolicy = targetPolicy;
+        _timeouts = timeouts;
+        _certificateValidation = certificateValidation;
         _profile = profile ?? PlatformHttpProfile.Douyin;
         _userAgent = userAgent ?? _profile.UserAgent;
         var handler = new SocketsHttpHandler
@@ -28,9 +44,10 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
             AutomaticDecompression = DecompressionMethods.GZip |
                                      DecompressionMethods.Deflate |
                                      DecompressionMethods.Brotli,
-            ConnectTimeout = TimeSpan.FromSeconds(HttpDefaults.ConnectTimeoutSeconds),
+            // DNS/TCP 与 TLS 各有独立预算，避免处理器用一个连接时限截断两个阶段
+            ConnectTimeout = Timeout.InfiniteTimeSpan,
             MaxResponseDrainSize = HttpDefaults.NoResponseDrainBytes,
-            ConnectCallback = targetPolicy.ConnectAsync
+            ConnectCallback = ConnectAsync
         };
         _client = new HttpClient(handler, disposeHandler: true)
         {
@@ -62,10 +79,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
             request.Headers.Accept.ParseAdd(HttpDefaults.Accept);
             request.Headers.Referrer = new Uri(_profile.Referer);
 
-            using var response = await _client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
+            using var response = await SendForHeadersAsync(request, cancellationToken);
 
             observe(new HttpObservation(
                 Host: current.IdnHost,
@@ -116,7 +130,11 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
                 throw new UpstreamRequestException(HttpFailureCodes.BodyTooLarge);
             }
 
-            var bytes = await ReadBoundedAsync(response.Content, cancellationToken);
+            var bytes = await RunPhaseAsync(
+                token => ReadBoundedAsync(response.Content, token),
+                _timeouts.MetadataBody,
+                HttpTimeoutPhase.MetadataBody,
+                cancellationToken);
             return new MetadataPage(
                 FinalUri: current,
                 StatusCode: (int)response.StatusCode,
@@ -153,10 +171,7 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
             request.Headers.UserAgent.ParseAdd(_userAgent);
             request.Headers.Referrer = new Uri(_profile.Referer);
             request.Headers.Accept.ParseAdd(HttpDefaults.MediaAccept);
-            using var response = await _client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
+            using var response = await SendForHeadersAsync(request, cancellationToken);
             observe(new HttpObservation(
                 Host: current.IdnHost,
                 StatusCode: (int)response.StatusCode,
@@ -218,6 +233,80 @@ public sealed class CookieFreeHttpClient : IUpstreamClient, IDisposable
     {
         _client.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private async ValueTask<Stream> ConnectAsync(
+        SocketsHttpConnectionContext context,
+        CancellationToken cancellationToken)
+    {
+        context.InitialRequestMessage.Options.TryGetValue(HeadersDeadlineKey, out var headersDeadline);
+        headersDeadline?.Pause();
+        var stream = await RunPhaseAsync(
+            token => _targetPolicy.ConnectAsync(context, token).AsTask(),
+            _timeouts.Connect,
+            HttpTimeoutPhase.Connect,
+            cancellationToken);
+        if (context.InitialRequestMessage.RequestUri?.Scheme != Uri.UriSchemeHttps)
+        {
+            headersDeadline?.Resume();
+            return stream;
+        }
+
+        // .NET 支持从连接回调返回已认证的 SslStream，保留域名校验与 SNI
+        var tls = new SslStream(stream, leaveInnerStreamOpen: false, _certificateValidation);
+        try
+        {
+            await RunPhaseAsync(async token =>
+            {
+                await tls.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
+                {
+                    TargetHost = context.DnsEndPoint.Host,
+                    ApplicationProtocols = [SslApplicationProtocol.Http11]
+                }, token);
+                return tls;
+            }, _timeouts.TlsHandshake, HttpTimeoutPhase.TlsHandshake, cancellationToken);
+            headersDeadline?.Resume();
+            return tls;
+        }
+        catch
+        {
+            await tls.DisposeAsync();
+            throw;
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendForHeadersAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        // 复用连接时立即计时；新建连接时暂停，由连接回调在握手完成后重新计时
+        // 连接池等待与发送 GET 请求也受此预算限制，防止排队无限等待
+        using var deadline = new ResponseHeadersDeadline(_timeouts.ResponseHeaders, cancellationToken);
+        request.Options.Set(HeadersDeadlineKey, deadline);
+        try
+        {
+            return await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+        }
+        catch (OperationCanceledException exception) when (deadline.IsExpired && !cancellationToken.IsCancellationRequested)
+        {
+            throw new UpstreamTimeoutException(HttpTimeoutPhase.ResponseHeaders, exception);
+        }
+    }
+
+    private static async Task<T> RunPhaseAsync<T>(
+        Func<CancellationToken, Task<T>> operation,
+        TimeSpan duration,
+        HttpTimeoutPhase phase,
+        CancellationToken cancellationToken)
+    {
+        using var timeout = new CancellationTokenSource(duration);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        try
+        {
+            return await operation(linked.Token);
+        }
+        catch (OperationCanceledException exception) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new UpstreamTimeoutException(phase, exception);
+        }
     }
 
     private static bool IsRedirect(HttpStatusCode status) => status is

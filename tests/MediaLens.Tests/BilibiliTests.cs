@@ -75,7 +75,7 @@ public sealed class BilibiliTests
         var item = Assert.Single(work.Items);
         Assert.Empty(item.ImageSources);
         Assert.Equal(1, item.Index);
-        Assert.Equal(2, item.VideoSources.Length);
+        Assert.Single(item.VideoSources);
         Assert.All(item.VideoSources, source =>
         {
             Assert.Equal(24_000, source.DurationMs);
@@ -87,7 +87,7 @@ public sealed class BilibiliTests
             Assert.Equal(PlatformHttpProfile.Bilibili.Referer, source.Headers["Referer"]);
             Assert.DoesNotContain("Cookie", source.Headers.Keys);
         });
-        Assert.NotSame(item.VideoSources[0].Headers, item.VideoSources[1].Headers);
+        Assert.Equal(1, client.MediaCalls);
         var play = Assert.Single(client.Requests, uri => uri.AbsolutePath.EndsWith("/playurl", StringComparison.Ordinal));
         Assert.Contains("cid=654322", play.Query);
         Assert.DoesNotContain("wrong", play.Query);
@@ -219,6 +219,23 @@ public sealed class BilibiliTests
             var error = await Assert.ThrowsAsync<ResolutionException>(() => adapter.ResolveAsync(new Uri(BilibiliTestClient.Url), CancellationToken.None));
             Assert.Equal(expected, error.Error.Code);
         }
+    }
+
+    [Fact]
+    public async Task APhaseTimeoutTriesTheNextMirrorAndStopsAtItsFirstSuccess()
+    {
+        var client = new BilibiliTestClient
+        {
+            MediaHandler = uri => uri.AbsolutePath == "/main.mp4"
+                ? throw new UpstreamTimeoutException(HttpTimeoutPhase.Connect, new OperationCanceledException())
+                : BilibiliTestClient.Location(uri, (int)HttpStatusCode.OK)
+        };
+        using var adapter = new BilibiliAdapter(client, TimeProvider.System);
+
+        var work = await adapter.ResolveAsync(new Uri(BilibiliTestClient.Url), CancellationToken.None);
+
+        Assert.Contains("/backup.mp4", Assert.Single(work.Items[0].VideoSources).Url, StringComparison.Ordinal);
+        Assert.Equal(2, client.MediaCalls);
     }
 
     [Fact]

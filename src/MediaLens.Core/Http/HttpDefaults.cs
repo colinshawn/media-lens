@@ -6,7 +6,11 @@ public static class HttpDefaults
     public const int MaximumMetadataBytes = 2_097_152;
     public const int MaximumRedirects = 5;
     public const int ReadBufferBytes = 8_192;
-    public const int ConnectTimeoutSeconds = 10;
+    public const int ConnectTimeoutSeconds = 15;
+    public const int TlsHandshakeTimeoutSeconds = 15;
+    public const int ResponseHeadersTimeoutSeconds = 30;
+    public const int MetadataBodyTimeoutSeconds = 30;
+    public const int ConnectionAttemptDelayMilliseconds = 300;
     public const int NoResponseDrainBytes = 0;
     public const string CookieHeader = "Cookie";
     public const string SetCookieHeader = "Set-Cookie";

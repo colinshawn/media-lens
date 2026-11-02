@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using MediaLens.Contracts;
+using MediaLens.Http;
 using MediaLens.Platforms;
 using MediaLens.Resolution;
 
@@ -232,6 +233,60 @@ public sealed class ApiTests
 
         await AssertErrorAsync(response, HttpStatusCode.GatewayTimeout, ErrorCodes.ResolutionTimeout, retryable: true);
         await canceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpstreamTimeoutsReturnUnavailableBeforeTheTotalDeadline(bool duringMediaProbe)
+    {
+        var upstream = duringMediaProbe
+            ? new StubUpstreamClient(Fixtures.VideoJson)
+            {
+                MediaHandler = (_, _) => Task.FromException<MediaLocation>(new TaskCanceledException())
+            }
+            : new StubUpstreamClient(Fixtures.VideoJson)
+            {
+                MetadataHandler = _ => throw new TaskCanceledException()
+            };
+        await using var factory = new ApiFactory { Upstream = upstream }.WithRealTcp();
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsync(ResolvePath, Content(ValidRequest));
+
+        await AssertErrorAsync(response, HttpStatusCode.ServiceUnavailable, ErrorCodes.UpstreamUnavailable, retryable: true);
+    }
+
+    [Fact]
+    public async Task TotalDeadlineDuringFallbackProbeStillReturnsTimeout()
+    {
+        var upstream = new StubUpstreamClient(Fixtures.VideoJson)
+        {
+            MediaHandler = async (uri, token) =>
+            {
+                if (uri.AbsolutePath == "/alternative.webm")
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                }
+
+                return new MediaLocation(
+                    FinalUri: uri,
+                    StatusCode: (int)HttpStatusCode.Forbidden,
+                    MimeType: "video/mp4",
+                    SizeBytes: null,
+                    RetryAfterSeconds: null);
+            }
+        };
+        const int timeoutMilliseconds = 100;
+        await using var factory = new ApiFactory(timeout: TimeSpan.FromMilliseconds(timeoutMilliseconds))
+        {
+            Upstream = upstream
+        }.WithRealTcp();
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsync(ResolvePath, Content(ValidRequest));
+
+        await AssertErrorAsync(response, HttpStatusCode.GatewayTimeout, ErrorCodes.ResolutionTimeout, retryable: true);
+        Assert.Contains(upstream.Requests, uri => uri.AbsolutePath == "/default.mp4");
+        Assert.Contains(upstream.Requests, uri => uri.AbsolutePath == "/alternative.webm");
     }
 
     [Fact]

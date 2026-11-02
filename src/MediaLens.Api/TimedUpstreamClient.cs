@@ -32,10 +32,11 @@ internal sealed class TimedUpstreamClient(IUpstreamClient inner, ILogger<TimedUp
         catch (Exception exception)
         {
             logger.LogWarning(
-                "Upstream {Stage} failed: host {Host}, exception {ExceptionType}, elapsed {ElapsedMilliseconds} ms",
+                "Upstream {Stage} failed: host {Host}, exception {ExceptionType}, timeout phase {TimeoutPhase}, elapsed {ElapsedMilliseconds} ms",
                 stage,
                 uri.IdnHost,
                 exception.GetType().Name,
+                UpstreamTimeoutException.FindPhase(exception)?.ToString(),
                 ElapsedMilliseconds(startedAt));
             throw;
         }
@@ -67,10 +68,11 @@ internal sealed class TimedUpstreamClient(IUpstreamClient inner, ILogger<TimedUp
         catch (Exception exception)
         {
             logger.LogWarning(
-                "Upstream media probe failed: host {Host}, type {MediaType}, exception {ExceptionType}, elapsed {ElapsedMilliseconds} ms",
+                "Upstream media probe failed: host {Host}, type {MediaType}, exception {ExceptionType}, timeout phase {TimeoutPhase}, elapsed {ElapsedMilliseconds} ms",
                 uri.IdnHost,
                 expectedType,
                 exception.GetType().Name,
+                UpstreamTimeoutException.FindPhase(exception)?.ToString(),
                 ElapsedMilliseconds(startedAt));
             throw;
         }

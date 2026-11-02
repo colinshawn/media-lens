@@ -72,6 +72,30 @@ public sealed class TimedUpstreamClientTests
     }
 
     [Fact]
+    public async Task WrappedTimeoutLogsOnlyThePhaseAndSafeRequestFields()
+    {
+        const string secret = "synthetic-private-url-and-error";
+        var upstream = new StubUpstreamClient(Fixtures.VideoJson)
+        {
+            MediaHandler = (_, _) => throw new HttpRequestException(secret,
+                new UpstreamTimeoutException(HttpTimeoutPhase.TlsHandshake, new IOException(secret)))
+        };
+        using var logs = new CaptureLogs();
+        using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(logs));
+        var client = new TimedUpstreamClient(upstream, loggerFactory.CreateLogger<TimedUpstreamClient>());
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.ResolveMediaAsync(
+            new Uri("https://cdn.example/synthetic.mp4?private=" + secret),
+            MediaTypes.Video,
+            CancellationToken.None));
+
+        var entry = Assert.Single(logs.Entries);
+        Assert.Contains("timeout phase TlsHandshake", entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(secret, entry.Message, StringComparison.Ordinal);
+        Assert.Null(entry.ExceptionMessage);
+    }
+
+    [Fact]
     public async Task FailuresLogOnlyTheExceptionTypeAndElapsed()
     {
         const string secret = "synthetic-upstream-secret";

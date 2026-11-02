@@ -11,6 +11,9 @@ public sealed class DouyinAdapterTests
     private const string Image = """
         {"width":100,"height":200,"url_list":["https://cdn.example/still.jpg"]}
         """;
+    private const string ImageWithBackup = """
+        {"url_list":["https://cdn.example/still.jpg","https://cdn.example/backup.jpg"]}
+        """;
     private const string Live = """
         {"url_list":["https://cdn.example/live.jpg"],"live_photo_type":1,
          "video":{"duration":3000,"play_addr":{"url_list":["https://cdn.example/live.mp4"]}}}
@@ -39,14 +42,18 @@ public sealed class DouyinAdapterTests
         Assert.Equal("v.douyin.com", upstream.Requests.First().IdnHost);
     }
 
-    [Fact]
-    public async Task VideoPreservesVariantsAndFullUrlsWithPerCandidateMetadata()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task VideoReturnsTheFirstAvailableVariantWithItsOwnMetadata(bool primaryFails)
     {
         var upstream = new StubUpstreamClient(Fixtures.VideoJson)
         {
             MediaHandler = (uri, _) => Task.FromResult(new MediaLocation(
                 FinalUri: uri,
-                StatusCode: (int)HttpStatusCode.OK,
+                StatusCode: primaryFails && uri.AbsolutePath == "/default.mp4"
+                    ? (int)HttpStatusCode.Forbidden
+                    : (int)HttpStatusCode.OK,
                 MimeType: uri.AbsolutePath == "/alternative.webm" ? "video/webm" : "video/mp4",
                 SizeBytes: uri.AbsolutePath == "/alternative.webm" ? 321 : 654,
                 RetryAfterSeconds: null))
@@ -57,21 +64,16 @@ public sealed class DouyinAdapterTests
         Assert.Equal(MediaTypes.Video, work.WorkType);
         var item = Assert.Single(work.Items);
         Assert.Empty(item.ImageSources);
-        Assert.Equal(2, item.VideoSources.Length);
-        var first = item.VideoSources[0];
-        var second = item.VideoSources[1];
-        Assert.EndsWith("?sig=A%2FB%2B", first.Url);
-        Assert.Equal(1080, first.Width);
-        Assert.Equal(1920, first.Height);
-        Assert.Equal(640, second.Width);
-        Assert.Equal(480, second.Height);
-        Assert.Equal(12000, first.DurationMs);
-        Assert.Null(second.DurationMs);
-        Assert.Equal("video/webm", second.MimeType);
-        Assert.EndsWith(".webm", second.FileName);
-        Assert.Equal(321, second.SizeBytes);
-        Assert.NotSame(first.Headers, second.Headers);
-        Assert.Null(first.ExpiresAt);
+        var source = Assert.Single(item.VideoSources);
+        Assert.EndsWith(primaryFails ? "/alternative.webm" : "?sig=A%2FB%2B", source.Url);
+        Assert.Equal(primaryFails ? 640 : 1080, source.Width);
+        Assert.Equal(primaryFails ? 480 : 1920, source.Height);
+        Assert.Equal(primaryFails ? null : (long?)12000, source.DurationMs);
+        Assert.Equal(primaryFails ? "video/webm" : "video/mp4", source.MimeType);
+        Assert.EndsWith(primaryFails ? ".webm" : ".mp4", source.FileName);
+        Assert.Equal(primaryFails ? 321 : 654, source.SizeBytes);
+        Assert.Null(source.ExpiresAt);
+        Assert.Equal(primaryFails ? 3 : 2, upstream.Requests.Count);
         Assert.Equal("合成描述", work.Description);
     }
 
@@ -164,6 +166,92 @@ public sealed class DouyinAdapterTests
 
         Assert.Single(result.Items);
         Assert.Single(result.Items[0].VideoSources);
+    }
+
+    [Theory]
+    [InlineData("/still.jpg", "/backup.jpg")]
+    [InlineData("/backup.jpg", "/still.jpg")]
+    public async Task ATimedOutImageCandidateDoesNotDiscardOtherSources(string timedOutPath, string expectedPath)
+    {
+        var upstream = new StubUpstreamClient(Album(ImageWithBackup))
+        {
+            MediaHandler = (uri, _) => uri.AbsolutePath == timedOutPath
+                ? Task.FromException<MediaLocation>(new TaskCanceledException())
+                : Task.FromResult(new MediaLocation(
+                    FinalUri: uri,
+                    StatusCode: (int)HttpStatusCode.OK,
+                    MimeType: "image/jpeg",
+                    SizeBytes: null,
+                    RetryAfterSeconds: null))
+        };
+        var work = await new DouyinAdapter(upstream, new FixedClock())
+            .ResolveAsync(new Uri(Fixtures.WorkUrl), CancellationToken.None);
+
+        var item = Assert.Single(work.Items);
+        Assert.Equal(MediaTypes.Image, item.Type);
+        Assert.Equal("https://cdn.example" + expectedPath, Assert.Single(item.ImageSources).Url);
+        Assert.Empty(item.VideoSources);
+        Assert.Equal(timedOutPath == "/still.jpg" ? 3 : 2, upstream.Requests.Count);
+    }
+
+    [Theory]
+    [InlineData(MediaTypes.Image)]
+    [InlineData(MediaTypes.Video)]
+    [InlineData(MediaTypes.LivePhoto)]
+    public async Task TimedOutRequiredMediaRejectsTheWholeWork(string type)
+    {
+        var metadata = type switch
+        {
+            MediaTypes.Image => Album(ImageWithBackup),
+            MediaTypes.LivePhoto => Album(Image + ',' + Live),
+            _ => Fixtures.VideoJson
+        };
+        var upstream = new StubUpstreamClient(metadata)
+        {
+            MediaHandler = (uri, _) => type == MediaTypes.LivePhoto && uri.AbsolutePath != "/live.mp4"
+                ? Task.FromResult(new MediaLocation(
+                    FinalUri: uri,
+                    StatusCode: (int)HttpStatusCode.OK,
+                    MimeType: "image/jpeg",
+                    SizeBytes: null,
+                    RetryAfterSeconds: null))
+                : Task.FromException<MediaLocation>(new TaskCanceledException())
+        };
+        var error = await Assert.ThrowsAsync<ResolutionException>(() => new DouyinAdapter(upstream, new FixedClock())
+            .ResolveAsync(new Uri(Fixtures.WorkUrl), CancellationToken.None));
+
+        Assert.Equal(ErrorCodes.UpstreamUnavailable, error.Error.Code);
+        Assert.Equal((int)HttpStatusCode.ServiceUnavailable, error.StatusCode);
+        Assert.True(error.Error.Retryable);
+    }
+
+    [Fact]
+    public async Task CancellationDuringFallbackProbeIsNotSuppressed()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var upstream = new StubUpstreamClient(Album(ImageWithBackup))
+        {
+            MediaHandler = (uri, token) =>
+            {
+                if (uri.AbsolutePath == "/backup.jpg")
+                {
+                    cancellation.Cancel();
+                    return Task.FromCanceled<MediaLocation>(token);
+                }
+
+                return Task.FromResult(new MediaLocation(
+                    FinalUri: uri,
+                    StatusCode: (int)HttpStatusCode.Forbidden,
+                    MimeType: "image/jpeg",
+                    SizeBytes: null,
+                    RetryAfterSeconds: null));
+            }
+        };
+        var error = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new DouyinAdapter(upstream, new FixedClock())
+            .ResolveAsync(new Uri(Fixtures.WorkUrl), cancellation.Token));
+
+        Assert.Equal(cancellation.Token, error.CancellationToken);
+        Assert.Equal(3, upstream.Requests.Count);
     }
 
     [Fact]

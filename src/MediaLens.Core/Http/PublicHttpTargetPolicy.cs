@@ -1,10 +1,10 @@
 using System.Net;
-using System.Net.Sockets;
 
 namespace MediaLens.Http;
 
 public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
 {
+    private static readonly DualStackConnector Connector = new();
     private readonly PlatformHttpProfile _profile;
     private readonly bool _validatePublicIp;
     private readonly Dictionary<string, IPAddress[]> _addressOverrides = new(StringComparer.OrdinalIgnoreCase);
@@ -63,34 +63,7 @@ public sealed class PublicHttpTargetPolicy : IHttpTargetPolicy
         // 开关只控制公网属性检查；始终固定本次解析结果建连，避免再次解析域名。
         ValidateAddresses(addresses);
 
-        SocketException? lastFailure = null;
-        foreach (var address in addresses)
-        {
-            var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
-            {
-                NoDelay = true
-            };
-
-            try
-            {
-                await socket.ConnectAsync(
-                    new IPEndPoint(address, context.DnsEndPoint.Port),
-                    cancellationToken);
-                return new NetworkStream(socket, ownsSocket: true);
-            }
-            catch (SocketException exception)
-            {
-                socket.Dispose();
-                lastFailure = exception;
-            }
-            catch
-            {
-                socket.Dispose();
-                throw;
-            }
-        }
-
-        throw new HttpRequestException("No resolved target address was reachable.", lastFailure);
+        return await Connector.ConnectAsync(addresses, context.DnsEndPoint.Port, cancellationToken);
     }
 
     private void ValidateAddresses(IPAddress[] addresses)

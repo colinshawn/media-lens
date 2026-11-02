@@ -34,6 +34,12 @@ public sealed class ResolutionService(
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            if (!timeout.IsCancellationRequested)
+            {
+                // 上游内部取消或连接超时不代表总解析时限已经到期
+                throw ResolutionErrors.UpstreamUnavailable();
+            }
+
             throw new ResolutionException(
                 ErrorCodes.ResolutionTimeout, "解析超出总时限，请稍后重试。", (int)HttpStatusCode.GatewayTimeout, retryable: true);
         }

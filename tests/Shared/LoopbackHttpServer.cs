@@ -1,7 +1,10 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using MediaLens.Http;
 
@@ -17,11 +20,18 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
     private readonly CancellationTokenSource _shutdown = new();
     private readonly ConcurrentBag<Task> _connections = [];
     private readonly Func<ObservedRequest, CancellationToken, Task<ServerReply>> _respond;
+    private readonly X509Certificate2? _certificate;
+    private readonly TimeSpan? _tlsHandshakeDelay;
     private readonly Task _acceptLoop;
 
-    public LoopbackHttpServer(Func<ObservedRequest, CancellationToken, Task<ServerReply>> respond)
+    public LoopbackHttpServer(
+        Func<ObservedRequest, CancellationToken, Task<ServerReply>> respond,
+        X509Certificate2? certificate = null,
+        TimeSpan? tlsHandshakeDelay = null)
     {
         _respond = respond;
+        _certificate = certificate;
+        _tlsHandshakeDelay = tlsHandshakeDelay;
         _listener.Start();
         Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
         _acceptLoop = AcceptAsync();
@@ -64,7 +74,22 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
         {
             try
             {
-                await using var stream = connection.GetStream();
+                await using var stream = _certificate is null
+                    ? (Stream)connection.GetStream()
+                    : new SslStream(connection.GetStream(), leaveInnerStreamOpen: false);
+                if (stream is SslStream tls)
+                {
+                    if (_tlsHandshakeDelay is { } delay)
+                    {
+                        await Task.Delay(delay, _shutdown.Token);
+                    }
+
+                    await tls.AuthenticateAsServerAsync(new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _certificate,
+                        ApplicationProtocols = [SslApplicationProtocol.Http11]
+                    }, _shutdown.Token);
+                }
                 using var reader = new StreamReader(stream, Encoding.ASCII, leaveOpen: true);
                 var firstLine = await reader.ReadLineAsync(_shutdown.Token);
                 if (firstLine is null)
@@ -112,6 +137,10 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
 
                 output.Append("\r\n");
                 await stream.WriteAsync(Encoding.ASCII.GetBytes(output.ToString()), _shutdown.Token);
+                if (reply.BodyDelay is { } bodyDelay)
+                {
+                    await Task.Delay(bodyDelay, _shutdown.Token);
+                }
                 await stream.WriteAsync(body, _shutdown.Token);
             }
             catch (OperationCanceledException) when (_shutdown.IsCancellationRequested)
@@ -120,6 +149,10 @@ internal sealed class LoopbackHttpServer : IAsyncDisposable
             catch (IOException)
             {
                 // 读取上限或取消测试会由客户端主动关闭连接。
+            }
+            catch (AuthenticationException)
+            {
+                // 证书拒绝与 TLS 超时测试会主动中断握手
             }
         }
     }
@@ -133,7 +166,8 @@ internal sealed record ServerReply(
     string ContentType = "application/json",
     IReadOnlyDictionary<string, string>? Headers = null,
     bool OmitContentLength = false,
-    long? DeclaredContentLength = null);
+    long? DeclaredContentLength = null,
+    TimeSpan? BodyDelay = null);
 
 /// <summary>仅供测试把合成的平台域名连接到本机替身；生产策略仍禁止环回地址。</summary>
 internal sealed class LoopbackTargetPolicy(

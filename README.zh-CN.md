@@ -117,6 +117,7 @@ Bilibili 的 workId 标识整稿 BV，所选 P 由 webUrl 的 p 区分，文件�
 - 每个响应包含服务端生成的 `requestId`；作品通过 `(platform, workId)` 标识，ID 使用字符串。
 - `workType` 为 `video` 或 `album`。媒体项使用从 1 开始的连续 `index`，`type` 为 `video`、`image` 或 `livePhoto`。
 - `imageSources`、`videoSources` 为同一张图片或同一段视频的有序备用候选，不是额外作品项。调用方从每个必需列表中择一下载，不需要下载全部候选；不适用的列表为 `[]`。
+- 抖音与 Bilibili 按候选顺序探测，每个必需媒体找到首个可用来源后立即停止，该列表返回一个来源；图集仍须取得所有图片，实况仍须同时取得静态图与动态短片。
 - 实况的静态图和动态短片候选保存在同一媒体项中；混合图集保持原始项顺序。
 - 每个候选携带完整 `url`、独立 `headers` 及可空的 `mimeType`、`fileName`、`width`、`height`、`durationMs`、`sizeBytes`、`expiresAt`。下载头没有跨层继承，不同候选的格式、尺寸和大小可以不同。
 - 保留 URL 及全部查询参数；下载请求头不得包含 Cookie 或上游账号凭据。
@@ -232,6 +233,8 @@ docker run --rm --read-only --tmpfs /tmp:rw,nosuid,size=32m \
 默认要求平台和 CDN 主机返回真实公网地址。本机启用 TUN Fake-IP DNS 时，建议让相关主机返回真实地址；Bilibili 包括 bilibili.com、b23.tv 和 bilivideo.com。在受控网络临时诊断时，可通过[下方运行配置开关](#接口访问与运行配置)关闭公网 IP 校验；该开关不配置代理路由，也不保证 Fake-IP 地址可达。网络条件详见[抖音记录](docs/validation/cookie-free-douyin.md)与[Bilibili 记录](docs/validation/cookie-free-bilibili.md)。
 
 容器使用基础镜像提供的非 root 用户，不依赖浏览器、数据库、Redis、媒体卷或上游账号配置。环境变量 `MediaLens__ResolutionTimeoutSeconds` 可设置 1—120 秒的总解析时限，默认 30 秒。
+
+API 与 Probe 共用的 HTTP 传输会在完整校验本次 DNS 结果后，交替使用 IPv4/IPv6 地址，间隔 300 ms 启动后续连接；明确失败时立即回退，成功后取消并释放其余连接。所有尝试都固定使用已校验的 IP，不进行二次域名解析。默认分阶段预算为：DNS/TCP 建连 15 秒、TLS 握手 15 秒、响应头 30 秒、元数据正文读取 30 秒；媒体不读取正文。新连接的响应头计时在握手完成后开始，复用连接的计时也覆盖连接池等待。阶段预算逐跳生效，始终受总解析时限约束，不能相加延长总时限。阶段超时属于可重试的 `UPSTREAM_UNAVAILABLE`（503），总时限到期为 `RESOLUTION_TIMEOUT`（504）；失败日志中的 `timeout phase` 标识具体阶段。
 
 ### 接口访问与运行配置
 

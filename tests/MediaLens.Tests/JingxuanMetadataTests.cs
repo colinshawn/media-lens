@@ -32,7 +32,7 @@ public sealed class JingxuanMetadataTests
         JsonSerializer.Serialize(model) + "}}}}}}; throw 'must-not-run';";
 
     [Fact]
-    public async Task FallbackReadsOnlyMatchingSsrModelAndReturnsIndependentCdnCandidates()
+    public async Task FallbackReadsOnlyMatchingSsrModelAndStopsAtTheFirstUsableCdn()
     {
         var upstream = new StubUpstreamClient(string.Empty)
         {
@@ -51,14 +51,13 @@ public sealed class JingxuanMetadataTests
         Assert.Equal(MediaTypes.Video, work.WorkType);
         var item = Assert.Single(work.Items);
         Assert.Empty(item.ImageSources);
-        Assert.Equal(2, item.VideoSources.Length);
-        var source = item.VideoSources[0];
+        var source = Assert.Single(item.VideoSources);
         Assert.EndsWith("?sig=A%2FB%2B", source.Url);
         Assert.Equal(1080, source.Width);
         Assert.Equal(1920, source.Height);
         Assert.Equal(8134, source.DurationMs);
         Assert.Equal("2027-01-01T00:00:00.0000000Z", source.ExpiresAt);
-        Assert.NotSame(source.Headers, item.VideoSources[1].Headers);
+        Assert.DoesNotContain(upstream.Requests, uri => uri.IdnHost == "v4.douyinvod.com");
         Assert.Equal(["api.amemv.com", "www.iesdouyin.com", "jingxuan.douyin.com"],
             upstream.Requests.Take(3).Select(uri => uri.IdnHost));
     }
