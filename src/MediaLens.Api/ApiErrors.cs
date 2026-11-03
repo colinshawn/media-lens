@@ -1,4 +1,7 @@
 using System.Globalization;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 using MediaLens.Contracts;
 using MediaLens.Http;
 using MediaLens.Resolution;
@@ -8,6 +11,13 @@ namespace MediaLens.Api;
 internal static class ApiErrors
 {
     private const string RequestIdFormat = "N";
+
+    // 保留中文可读性，同时继续转义 JSON 控制字符和 HTML 敏感字符
+    private static readonly MediaLensJsonContext ErrorJsonContext = new(
+        new JsonSerializerOptions(MediaLensJsonContext.Default.Options)
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        });
 
     public static void UseApiErrors(this WebApplication app)
     {
@@ -78,7 +88,7 @@ internal static class ApiErrors
 
         return context.Response.WriteAsJsonAsync(
             new ApiErrorResponse(context.TraceIdentifier, error),
-            MediaLensJsonContext.Default.ApiErrorResponse,
+            ErrorJsonContext.ApiErrorResponse,
             contentType: null,
             cancellationToken: context.RequestAborted);
     }

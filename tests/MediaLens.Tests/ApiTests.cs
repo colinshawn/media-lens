@@ -207,7 +207,30 @@ public sealed class ApiTests
         using var response = await client.PostAsync(ResolvePath, Content(ValidRequest));
 
         await AssertErrorAsync(response, HttpStatusCode.InternalServerError, ErrorCodes.InternalError);
+        Assert.Contains("服务内部发生错误。", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
         Assert.DoesNotContain(syntheticSecret, await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(ResolvePath)]
+    [InlineData(ExplicitPath)]
+    public async Task ErrorResponsesKeepChineseReadableAndEscapeSpecialCharacters(string path)
+    {
+        const string message = "合成错误：\"中文\"\\路径\n<详情>&";
+        var adapter = new StubAdapter("douyin", "www.douyin.com", (_, _) => throw new ResolutionException(
+            ErrorCodes.UpstreamUnavailable, message, (int)HttpStatusCode.ServiceUnavailable));
+        await using var factory = new ApiFactory(Fixtures.Registry(adapter)).WithRealTcp();
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsync(path, Content(ValidRequest));
+
+        await AssertErrorAsync(response, HttpStatusCode.ServiceUnavailable, ErrorCodes.UpstreamUnavailable);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains("合成错误：", body, StringComparison.Ordinal);
+        Assert.Contains("中文", body, StringComparison.Ordinal);
+        Assert.Contains("路径", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("<详情>", body, StringComparison.Ordinal);
+        using var json = JsonDocument.Parse(body);
+        Assert.Equal(message, json.RootElement.GetProperty("error").GetProperty("message").GetString());
     }
 
     [Fact]
